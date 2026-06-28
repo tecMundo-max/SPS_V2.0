@@ -1,9 +1,10 @@
 /**
  * ==========================================================
  * SPS v2
- * Arquivo: auth.js
+ * Arquivo: js/firebase/auth.js
+ * Versão: 3.0 (Produção)
  * Responsabilidade:
- * Camada única de autenticação do sistema.
+ * Camada única de autenticação Firebase.
  * ==========================================================
  */
 
@@ -17,42 +18,38 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-/**
- * Traduz erros do Firebase Authentication
- */
-function getAuthErrorMessage(errorCode) {
+/* ==========================================================
+   Mensagens
+========================================================== */
 
-    const messages = {
-        "auth/invalid-email": "E-mail inválido.",
-        "auth/missing-password": "Informe a senha.",
-        "auth/user-disabled": "Usuário desativado.",
-        "auth/user-not-found": "Usuário não encontrado.",
-        "auth/wrong-password": "Senha incorreta.",
-        "auth/invalid-credential": "E-mail ou senha inválidos.",
-        "auth/network-request-failed": "Erro de conexão.",
-        "auth/too-many-requests": "Muitas tentativas. Aguarde alguns minutos."
-    };
+const AUTH_ERRORS = Object.freeze({
+    "auth/invalid-email": "E-mail inválido.",
+    "auth/missing-password": "Informe a senha.",
+    "auth/user-disabled": "Usuário desativado.",
+    "auth/user-not-found": "Usuário não encontrado.",
+    "auth/wrong-password": "Senha incorreta.",
+    "auth/invalid-credential": "E-mail ou senha inválidos.",
+    "auth/network-request-failed": "Falha de conexão.",
+    "auth/too-many-requests": "Muitas tentativas. Aguarde alguns minutos."
+});
 
-    return messages[errorCode] || "Erro inesperado na autenticação.";
-}
-
-/**
- * Padroniza retorno
- */
-function createResponse(success, data = null, message = "", error = null) {
-
+function response(success, data = null, message = "", error = null) {
     return {
         success,
         data,
         message,
         error
     };
-
 }
 
-/**
- * Login
- */
+function errorMessage(error) {
+    return AUTH_ERRORS[error.code] || "Erro inesperado de autenticação.";
+}
+
+/* ==========================================================
+   Login
+========================================================== */
+
 export async function login(email, password) {
 
     try {
@@ -63,7 +60,7 @@ export async function login(email, password) {
             password
         );
 
-        return createResponse(
+        return response(
             true,
             credential.user,
             "Login realizado com sucesso."
@@ -71,55 +68,57 @@ export async function login(email, password) {
 
     } catch (error) {
 
-        return createResponse(
+        return response(
             false,
             null,
-            getAuthErrorMessage(error.code),
-            error.code
+            errorMessage(error),
+            error
         );
 
     }
 
 }
 
-/**
- * Logout
- */
+/* ==========================================================
+   Logout
+========================================================== */
+
 export async function logout() {
 
     try {
 
         await signOut(auth);
 
-        return createResponse(
+        return response(
             true,
             null,
-            "Logout realizado com sucesso."
+            "Logout realizado."
         );
 
     } catch (error) {
 
-        return createResponse(
+        return response(
             false,
             null,
-            "Erro ao realizar logout.",
-            error.code
+            "Não foi possível finalizar a sessão.",
+            error
         );
 
     }
 
 }
 
-/**
- * Recuperação de senha
- */
+/* ==========================================================
+   Recuperação de senha
+========================================================== */
+
 export async function resetPassword(email) {
 
     try {
 
         await sendPasswordResetEmail(auth, email);
 
-        return createResponse(
+        return response(
             true,
             null,
             "E-mail de recuperação enviado."
@@ -127,27 +126,28 @@ export async function resetPassword(email) {
 
     } catch (error) {
 
-        return createResponse(
+        return response(
             false,
             null,
-            getAuthErrorMessage(error.code),
-            error.code
+            errorMessage(error),
+            error
         );
 
     }
 
 }
 
-/**
- * Atualiza perfil do usuário
- */
-export async function updateUser(userData) {
+/* ==========================================================
+   Atualização do perfil
+========================================================== */
+
+export async function updateCurrentUser(data) {
 
     try {
 
         if (!auth.currentUser) {
 
-            return createResponse(
+            return response(
                 false,
                 null,
                 "Usuário não autenticado."
@@ -155,50 +155,55 @@ export async function updateUser(userData) {
 
         }
 
-        await updateProfile(auth.currentUser, userData);
+        await updateProfile(auth.currentUser, data);
 
-        return createResponse(
+        return response(
             true,
             auth.currentUser,
-            "Perfil atualizado com sucesso."
+            "Perfil atualizado."
         );
 
     } catch (error) {
 
-        return createResponse(
+        return response(
             false,
             null,
             "Erro ao atualizar perfil.",
-            error.code
+            error
         );
 
     }
 
 }
 
-/**
- * Retorna usuário autenticado
- */
+export async function updateUser(data) {
+    return updateCurrentUser(data);
+}
+
+/* ==========================================================
+   Usuário Atual
+========================================================== */
+
 export function getCurrentUser() {
-
     return auth.currentUser;
-
 }
 
-/**
- * Verifica autenticação
- */
+/* ==========================================================
+   Sessão
+========================================================== */
+
 export function isAuthenticated() {
-
     return auth.currentUser !== null;
-
 }
 
-/**
- * Observador de autenticação
- */
-export function onUserStateChange(callback) {
+/* ==========================================================
+   Listener
+========================================================== */
 
+export function onUserStateChanged(callback) {
     return onAuthStateChanged(auth, callback);
+}
 
+export function onUserStateChange(callback) {
+    return onUserStateChanged(callback);
 }
