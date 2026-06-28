@@ -1,0 +1,11 @@
+:root {
+  --font-family-base: Arial, Helvetica, sans-serif;
+  --color-background: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-muted: #6b7280;
+  --color-border: #d1d5db;
+  --color-primary: #2563eb;
+  --spacing-page: 24px;
+  --radius-base: 8px;
+}
