@@ -1,17 +1,53 @@
+/**
+ * ==========================================================
+ * SPS v2
+ * Arquivo: js/firebase/config.js
+ * Versão: 3.0 (Produção)
+ * Responsabilidade:
+ * Inicialização única do Firebase.
+ * ==========================================================
+ */
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDYnvcRKt4qDpk08_4MQVNEOr9Iq95X980",
-    authDomain: "sps003hjr.firebaseapp.com",
-    databaseURL: "https://sps003hjr-default-rtdb.firebaseio.com",
-    projectId: "sps003hjr",
-    storageBucket: "sps003hjr.firebasestorage.app",
-    messagingSenderId: "294133615625",
-    appId: "1:294133615625:web:832c4db972dcb1b92cbcd8"
+/**
+ * Configuração do Firebase
+ * Preencha com os dados do projeto SPS003HJR.
+ */
+const firebaseConfig = Object.freeze({
+    apiKey: "SUA_API_KEY",
+    authDomain: "SPS003HJR.firebaseapp.com",
+    databaseURL: "https://SPS003HJR-default-rtdb.firebaseio.com",
+    projectId: "SPS003HJR",
+    storageBucket: "SPS003HJR.firebasestorage.app",
+    messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+    appId: "SEU_APP_ID"
+});
+
+/**
+ * Instância única da aplicação Firebase
+ */
+const app = initializeApp(firebaseConfig);
+
+/**
+ * Serviços da aplicação
+ */
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+/**
+ * Exportações
+ */
+export {
+    app,
+    auth,
+    db,
+    firebaseConfig
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-export { app, auth };
+/**
+ * Exportação padrão
+ */
+export default app;

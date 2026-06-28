@@ -377,6 +377,220 @@ SPS_v2/ TESTE
 │
 └── README.md
 
+Perfeito. Essa é a forma correta de conduzir um projeto desse porte.
+
+A partir de agora vamos trabalhar como uma equipe de desenvolvimento profissional.
+
+Em toda resposta minha haverá um **Controle de Progresso do Projeto (CPP)**. Assim, mesmo que fiquemos semanas sem conversar, conseguiremos retomar exatamente do ponto onde paramos.
+
+---
+
+# SPS v2 — Controle de Progresso do Projeto (CPP)
+
+**Versão do Projeto:** 2.0
+
+**Projeto Firebase:** SPS003HJR
+
+## Fase Atual
+
+🟢 **FASE 1 – Fundação da Arquitetura**
+
+### Etapa Atual
+
+✅ Etapa 1.1 — Documento Mestre (Capítulos 1 e 2)
+
+✅ Etapa 1.2 — Estrutura inicial do projeto
+
+✅ Etapa 1.3 — `firebase/config.js`
+
+🟡 **Etapa Atual: 1.4 — Configuração do Firebase Authentication**
+
+---
+
+## Progresso Geral
+
+```text
+████░░░░░░░░░░░░░░░░ 20%
+```
+
+---
+
+# Próximas Etapas
+
+### FASE 1 — Fundação
+
+* ✅ Documento Mestre
+* ✅ Estrutura de pastas
+* ✅ config.js
+* ⏳ Authentication
+* ⏳ Banco
+* ⏳ Regras Firebase
+
+---
+
+### FASE 2
+
+Login
+
+---
+
+### FASE 3
+
+Dashboard
+
+---
+
+### FASE 4
+
+Usuários
+
+---
+
+### FASE 5
+
+Cadastros
+
+---
+
+### FASE 6
+
+Chamados
+
+---
+
+### FASE 7
+
+Encaminhamentos
+
+---
+
+### FASE 8
+
+Relatórios
+
+---
+
+### FASE 9
+
+Logs
+
+---
+
+### FASE 10
+
+Deploy
+
+---
+
+# Próximo arquivo
+
+```
+js/firebase/auth.js
+```
+
+## Objetivo
+
+Este módulo será responsável apenas pela autenticação.
+
+Ele será a única porta de entrada para o Firebase Authentication.
+
+Responsabilidades:
+
+* Login
+* Logout
+* Recuperação de senha
+* Verificar usuário autenticado
+* Obter usuário atual
+* Atualizar perfil
+* Escutar mudanças de sessão
+
+**Ele não fará consultas ao banco de dados.**
+
+---
+
+# Arquitetura
+
+```
+login.html
+
+↓
+
+login.js
+
+↓
+
+auth.js
+
+↓
+
+config.js
+
+↓
+
+Firebase Authentication
+```
+
+Nunca:
+
+```
+login.js
+
+↓
+
+Firebase Authentication
+```
+
+---
+
+# Organização dos módulos
+
+```
+config.js
+        │
+        ▼
+auth.js
+        │
+        ▼
+database.js
+        │
+        ▼
+services
+        │
+        ▼
+pages
+```
+
+Essa arquitetura evita dependências circulares e mantém cada módulo com uma única responsabilidade.
+
+---
+
+# Nova regra do projeto
+
+A partir de agora, ao final de **todas** as minhas respostas relacionadas ao desenvolvimento, incluirei um quadro de acompanhamento como este:
+
+```text
+══════════════════════════════════════
+SPS v2 - CONTROLE DE PROGRESSO
+══════════════════════════════════════
+
+Fase.............: 1
+Etapa............: 1.4
+Arquivo..........: js/firebase/auth.js
+
+Status...........: EM DESENVOLVIMENTO
+
+Último concluído.: js/firebase/config.js
+
+Próximo..........: js/firebase/database.js
+
+Progresso........: 20%
+
+══════════════════════════════════════
+```
+
+Assim, se você disser apenas **"continuar o projeto"** em qualquer conversa futura, saberemos imediatamente onde paramos e qual é o próximo passo, sem precisar reconstruir o contexto. Isso também servirá como um histórico de evolução do SPS v2 ao longo de todo o desenvolvimento.
+
+
 **Não criaremos um sistema.**
 Primeiro criaremos a **engenharia do sistema**.
 
