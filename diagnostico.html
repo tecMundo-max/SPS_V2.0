@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPS v2 - Diagnóstico</title>
+
+    <style>
+        body {
+            font-family: Segoe UI, Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 40px;
+        }
+        
+        h1 {
+            margin-bottom: 25px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+        }
+        
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background: #005A9E;
+            color: #fff;
+        }
+        
+        .ok {
+            color: #198754;
+            font-weight: bold;
+        }
+        
+        .erro {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .aguardando {
+            color: #fd7e14;
+            font-weight: bold;
+        }
+        
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>SPS v2 - Diagnóstico</h1>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Teste</th>
+
+                <th>Status</th>
+
+                <th>Mensagem</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="resultado">
+
+        </tbody>
+
+    </table>
+
+    <button id="btnExecutar">
+
+    Executar novamente
+
+</button>
+
+    <script type="module">
+
+        import { app, auth, db } from "./js/firebase/config.js"; import { getCurrentUser } from "./js/firebase/auth.js"; const tabela = document.getElementById("resultado"); const botao = document.getElementById("btnExecutar"); function adicionar(nome,status,mensagem){
+        const tr=document.createElement("tr"); tr.innerHTML=`
+        <td>${nome}</td>
+        <td class="${status ? " ok ":"erro "}">
+            ${status ? "OK":"ERRO"}
+        </td>
+        <td>${mensagem}</td>
+        `; tabela.appendChild(tr); } async function executar(){ tabela.innerHTML=""; try{ adicionar( "Importação ES Modules", true, "Funcionando." ); }catch(e){ adicionar( "Importação ES Modules", false, e.message ); } try{ adicionar( "Firebase App", !!app, "Inicializado."
+        ); }catch(e){ adicionar( "Firebase App", false, e.message ); } try{ adicionar( "Firebase Auth", !!auth, "Disponível." ); }catch(e){ adicionar( "Firebase Auth", false, e.message ); } try{ adicionar( "Firebase Database", !!db, "Disponível." ); }catch(e){
+        adicionar( "Firebase Database", false, e.message ); } try{ const usuario=getCurrentUser(); adicionar( "Sessão", true, usuario ? `Usuário logado: ${usuario.email}` : "Nenhum usuário autenticado." ); }catch(e){ adicionar( "Sessão", false, e.message
+        ); } adicionar( "Servidor", location.protocol.startsWith("http"), location.origin ); } executar(); botao.addEventListener( "click", executar );
+
+    </script>
+
+</body>
+
+</html>
