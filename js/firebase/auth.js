@@ -176,10 +176,6 @@ export async function updateCurrentUser(data) {
 
 }
 
-export async function updateUser(data) {
-    return updateCurrentUser(data);
-}
-
 /* ==========================================================
    Usuário Atual
 ========================================================== */
@@ -202,8 +198,4 @@ export function isAuthenticated() {
 
 export function onUserStateChanged(callback) {
     return onAuthStateChanged(auth, callback);
-}
-
-export function onUserStateChange(callback) {
-    return onUserStateChanged(callback);
 }
