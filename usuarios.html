@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPS v2 - Usuários</title>
+    <title>SPS v2 | Gestão de Usuários</title>
+
+    <link rel="icon" href="assets/logo/favicon.ico">
 
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/variables.css">
@@ -17,16 +19,17 @@
 <body>
 
     <header class="topbar">
-        <h1>Gestão de Usuários</h1>
 
-        <nav>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="encaminhamentos.html">Encaminhamentos</a>
-            <a href="fechamentos.html">Fechamentos</a>
-            <a href="relatorios.html">Relatórios</a>
-            <a href="configuracoes.html">Configurações</a>
-            <button id="btnLogout">Sair</button>
-        </nav>
+        <div class="topbar-left">
+            <h1>Gestão de Usuários</h1>
+        </div>
+
+        <div class="topbar-right">
+            <button id="btnLogout" class="btn-secondary">
+Sair
+</button>
+        </div>
+
     </header>
 
     <main class="dashboard">
@@ -37,11 +40,116 @@
 
                 <h2>Usuários</h2>
 
-                <button id="btnNovoUsuario">
+                <div class="actions">
+
+                    <input type="search" id="searchUser" placeholder="Pesquisar usuário...">
+
+                    <button id="btnNovoUsuario" class="btn-primary">
+
 Novo Usuário
+
 </button>
 
+                </div>
+
             </div>
+
+            <section id="userFormCard" class="card" hidden>
+
+                <h3 id="formTitle">
+                    Novo Usuário
+                </h3>
+
+                <form id="userForm">
+
+                    <input type="hidden" id="uid">
+
+                    <div class="form-group">
+
+                        <label for="nome">
+
+Nome
+
+</label>
+
+                        <input type="text" id="nome" required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="email">
+
+E-mail
+
+</label>
+
+                        <input type="email" id="email" required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="perfil">
+
+Perfil
+
+</label>
+
+                        <select id="perfil">
+
+<option value="ANALISTA">
+ANALISTA
+</option>
+
+<option value="SUPERVISOR">
+SUPERVISOR
+</option>
+
+</select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+
+Status
+
+</label>
+
+                        <label>
+
+<input
+type="checkbox"
+id="ativo"
+checked>
+
+Usuário ativo
+
+</label>
+
+                    </div>
+
+                    <div class="form-actions">
+
+                        <button type="submit" class="btn-primary">
+
+Salvar
+
+</button>
+
+                        <button type="button" id="btnCancelar" class="btn-secondary">
+
+Cancelar
+
+</button>
+
+                    </div>
+
+                </form>
+
+            </section>
 
             <div class="table-responsive">
 
@@ -50,12 +158,14 @@ Novo Usuário
                     <thead>
 
                         <tr>
+
                             <th>Nome</th>
                             <th>E-mail</th>
                             <th>Perfil</th>
                             <th>Status</th>
                             <th>Último Login</th>
                             <th>Ações</th>
+
                         </tr>
 
                     </thead>
@@ -65,7 +175,9 @@ Novo Usuário
                         <tr>
 
                             <td colspan="6">
-                                Carregando...
+
+                                Carregando usuários...
+
                             </td>
 
                         </tr>
