@@ -55,10 +55,17 @@ form.addEventListener("submit", async(event) => {
             setLoading(false);
             return;
         }
+try{
 
-        await logLogin();
+    logLogin();
 
-        window.location.href = "dashboard.html";
+}catch(e){
+
+    console.warn("Falha ao registrar log:",e);
+
+}
+
+window.location.href="dashboard.html";
 
     } catch (error) {
 
