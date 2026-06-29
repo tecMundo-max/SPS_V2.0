@@ -11,10 +11,11 @@
    PERFIS DE USUÁRIO
 ========================================================== */
 
-export const USER_ROLES = Object.freeze({
-    ADMIN: "admin",
-    SUPERVISOR: "supervisor",
-    OPERATOR: "operador"
+export const USER_PROFILES = Object.freeze({
+
+    SUPERVISOR: "SUPERVISOR",
+    ANALISTA: "ANALISTA"
+
 });
 
 /* ==========================================================
@@ -22,12 +23,14 @@ export const USER_ROLES = Object.freeze({
 ========================================================== */
 
 export const EMAIL_STATUS = Object.freeze({
+
     OPEN: "Em Aberto",
     ANALYSIS: "Em Análise",
     WAITING: "Aguardando Retorno",
     ANSWERED: "Respondido",
     CLOSED: "Encerrado",
     CANCELED: "Cancelado"
+
 });
 
 /* ==========================================================
@@ -35,10 +38,12 @@ export const EMAIL_STATUS = Object.freeze({
 ========================================================== */
 
 export const PRIORITIES = Object.freeze({
+
     LOW: "Baixa",
     MEDIUM: "Média",
     HIGH: "Alta",
     CRITICAL: "Crítica"
+
 });
 
 /* ==========================================================
@@ -46,11 +51,13 @@ export const PRIORITIES = Object.freeze({
 ========================================================== */
 
 export const CALL_STATUS = Object.freeze({
+
     OPEN: "Aberto",
     IN_PROGRESS: "Em Atendimento",
     PENDING: "Pendente",
     CLOSED: "Encerrado",
     CANCELED: "Cancelado"
+
 });
 
 /* ==========================================================
@@ -58,16 +65,15 @@ export const CALL_STATUS = Object.freeze({
 ========================================================== */
 
 export const DB_PATHS = Object.freeze({
+
     USERS: "users",
-    ANALYSTS: "analistas",
-    CALLS: "chamados",
-    EMAILS: "encaminhamentos",
-    EMAIL_HISTORY: "encaminhamentoHistorico",
-    SETTINGS: "configuracoes",
+    ENCAMINHAMENTOS: "encaminhamentos",
+    FECHAMENTOS: "fechamentos",
+    CONFIGURACOES: "configuracoes",
     LOGS: "logs",
-    AUDIT: "auditoria",
     DASHBOARD: "dashboard",
     METADATA: "metadata"
+
 });
 
 /* ==========================================================
@@ -75,14 +81,26 @@ export const DB_PATHS = Object.freeze({
 ========================================================== */
 
 export const AUDIT_ACTIONS = Object.freeze({
+
     CREATE: "CREATE",
     UPDATE: "UPDATE",
     DELETE: "DELETE",
+
     LOGIN: "LOGIN",
     LOGOUT: "LOGOUT",
+
+    PASSWORD_RESET: "PASSWORD_RESET",
+
+    PROFILE_CHANGE: "PROFILE_CHANGE",
+
+    ACTIVATE: "ACTIVATE",
+    DEACTIVATE: "DEACTIVATE",
+
     EXPORT: "EXPORT",
     IMPORT: "IMPORT",
+
     VIEW: "VIEW"
+
 });
 
 /* ==========================================================
@@ -90,10 +108,12 @@ export const AUDIT_ACTIONS = Object.freeze({
 ========================================================== */
 
 export const MESSAGE_TYPES = Object.freeze({
+
     SUCCESS: "success",
     ERROR: "error",
     WARNING: "warning",
     INFO: "info"
+
 });
 
 /* ==========================================================
@@ -101,10 +121,17 @@ export const MESSAGE_TYPES = Object.freeze({
 ========================================================== */
 
 export const APP_CONFIG = Object.freeze({
+
     NAME: "SPS v2",
-    VERSION: "2.0.0",
+
+    VERSION: "0.2.0",
+
     DEFAULT_PAGE_SIZE: 25,
+
     DATE_FORMAT: "pt-BR",
+
     DATETIME_FORMAT: "pt-BR",
+
     AUTO_REFRESH_SECONDS: 60
+
 });
