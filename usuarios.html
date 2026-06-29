@@ -1,20 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPS V2 - Usuarios</title>
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/forms.css">
-  <link rel="stylesheet" href="css/tables.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPS v2 - Usuários</title>
+
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/tables.css">
 </head>
+
 <body>
-  <main class="page">
-    <h1>Usuarios</h1>
-  </main>
-  <script type="module" src="js/app.js"></script>
+
+    <header class="topbar">
+        <h1>Gestão de Usuários</h1>
+
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="encaminhamentos.html">Encaminhamentos</a>
+            <a href="fechamentos.html">Fechamentos</a>
+            <a href="relatorios.html">Relatórios</a>
+            <a href="configuracoes.html">Configurações</a>
+            <button id="btnLogout">Sair</button>
+        </nav>
+    </header>
+
+    <main class="dashboard">
+
+        <section class="card">
+
+            <div class="card-header">
+
+                <h2>Usuários</h2>
+
+                <button id="btnNovoUsuario">
+Novo Usuário
+</button>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Perfil</th>
+                            <th>Status</th>
+                            <th>Último Login</th>
+                            <th>Ações</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="usersTableBody">
+
+                        <tr>
+
+                            <td colspan="6">
+                                Carregando...
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script type="module" src="js/bootstrap.js"></script>
+    <script type="module" src="js/pages/users.js"></script>
+
 </body>
+
 </html>

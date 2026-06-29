@@ -1,198 +1,298 @@
 /**
  * ==========================================================
  * SPS v2
- * Arquivo: js/services/usersService.js
+ * Arquivo: usersService.js
  * Responsabilidade:
- * Regras e acesso a dados de usuarios.
+ * Regras de negócio relacionadas aos usuários.
  * ==========================================================
  */
 
 import {
+
     createWithId,
     findChild,
-    edit,
-    destroy,
-    list
+    list,
+    edit
+
 } from "../firebase/database.js";
 
-import { DB_PATHS, USER_ROLES } from "../config/constants.js";
-
 import {
-    createTimestamp,
-    normalize,
-    validateRequired
-} from "./baseService.js";
 
+    DB_PATHS,
+    USER_PROFILES
+
+} from "../config/constants.js";
+
+/**
+ * Caminho da coleção
+ */
 const USERS_PATH = DB_PATHS.USERS;
 
-function userPath(uid) {
+/**
+ * Timestamp atual
+ */
+function now() {
 
-    return `${USERS_PATH}/${uid}`;
-
-}
-
-function normalizeUser(user, overrides = {}) {
-
-    return normalize({
-        uid: user.uid,
-        nome: user.nome || user.displayName || user.name || user.email || "",
-        email: user.email || "",
-        perfil: user.perfil || USER_ROLES.OPERATOR,
-        ativo: user.ativo !== undefined ? user.ativo : true,
-        ...overrides
-    });
+    return Date.now();
 
 }
 
-export async function createUser(user) {
+/**
+ * Modelo padrão
+ */
+function createUserModel(data = {}) {
 
-    const validation = validateRequired(user, ["uid"]);
+    return {
 
-    if (validation) {
+        nome: data.nome || "",
 
-        return validation;
+        email: data.email || "",
 
-    }
+        perfil: data.perfil || USER_PROFILES.ANALISTA,
 
-    const now = createTimestamp();
-    const data = normalizeUser(user, {
-        criadoEm: user.criadoEm || now,
-        ultimoLogin: user.ultimoLogin || now
-    });
+        ativo: data.ativo ? ? true,
 
-    return await createWithId(USERS_PATH, user.uid, data);
+        ultimoLogin: data.ultimoLogin || 0,
 
-}
+        createdAt: data.createdAt || now(),
 
-export async function createIfNotExists(user) {
+        updatedAt: data.updatedAt || now(),
 
-    const validation = validateRequired(user, ["uid"]);
+        createdBy: data.createdBy || "",
 
-    if (validation) {
+        updatedBy: data.updatedBy || "",
 
-        return validation;
+        deleted: false
 
-    }
-
-    const now = createTimestamp();
-    const existingUser = await getUser(user.uid);
-
-    if (existingUser.success) {
-
-        return await updateLastLogin(user.uid);
-
-    }
-
-    return await createUser({
-        uid: user.uid,
-        nome: user.displayName || user.nome || user.email || "",
-        email: user.email || "",
-        perfil: USER_ROLES.OPERATOR,
-        ativo: true,
-        criadoEm: now,
-        ultimoLogin: now
-    });
+    };
 
 }
 
+/**
+ * Buscar usuário
+ */
 export async function getUser(uid) {
 
-    const validation = validateRequired({ uid }, ["uid"]);
+    return await findChild(
 
-    if (validation) {
+        USERS_PATH,
+        uid
 
-        return validation;
-
-    }
-
-    return await findChild(USERS_PATH, uid);
+    );
 
 }
 
-export async function updateUser(uid, data) {
-
-    const validation = validateRequired({ uid }, ["uid"]);
-
-    if (validation) {
-
-        return validation;
-
-    }
-
-    return await edit(userPath(uid), normalize({
-        ...data,
-        atualizadoEm: createTimestamp()
-    }));
-
-}
-
-export async function disableUser(uid) {
-
-    return await updateUser(uid, {
-        ativo: false
-    });
-
-}
-
-export async function enableUser(uid) {
-
-    return await updateUser(uid, {
-        ativo: true
-    });
-
-}
-
-export async function deleteUser(uid) {
-
-    const validation = validateRequired({ uid }, ["uid"]);
-
-    if (validation) {
-
-        return validation;
-
-    }
-
-    return await destroy(userPath(uid));
-
-}
-
-export async function listUsers() {
-
-    return await list(USERS_PATH);
-
-}
-
+/**
+ * Buscar perfil
+ */
 export async function getUserProfile(uid) {
 
     return await getUser(uid);
 
 }
 
-export async function updateLastLogin(uid) {
+/**
+ * Listar usuários
+ */
+export async function listUsers() {
 
-    const validation = validateRequired({ uid }, ["uid"]);
+    return await list(
 
-    if (validation) {
+        USERS_PATH
 
-        return validation;
-
-    }
-
-    return await edit(userPath(uid), {
-        ultimoLogin: createTimestamp()
-    });
+    );
 
 }
 
-export default {
-    createUser,
-    createIfNotExists,
-    getUser,
-    updateUser,
-    disableUser,
-    enableUser,
-    deleteUser,
-    listUsers,
-    getUserProfile,
-    updateLastLogin
-};
+/**
+ * Criar usuário
+ */
+export async function createUser(uid, data) {
+
+    const user = createUserModel(data);
+
+    return await createWithId(
+
+        USERS_PATH,
+        uid,
+        user
+
+    );
+
+}
+
+/**
+ * Criar automaticamente caso não exista
+ */
+export async function createIfNotExists(firebaseUser) {
+
+    const exists = await getUser(firebaseUser.uid);
+
+    if (exists.success) {
+
+        return exists;
+
+    }
+
+    return await createUser(
+
+        firebaseUser.uid,
+
+        {
+
+            nome: firebaseUser.displayName || "",
+
+            email: firebaseUser.email,
+
+            perfil: USER_PROFILES.ANALISTA,
+
+            createdBy: firebaseUser.uid,
+
+            updatedBy: firebaseUser.uid
+
+        }
+
+    );
+
+}
+
+/**
+ * Atualizar usuário
+ */
+export async function updateUser(uid, data) {
+
+    data.updatedAt = now();
+
+    return await edit(
+
+        `${USERS_PATH}/${uid}`,
+
+        data
+
+    );
+
+}
+
+/**
+ * Ativar usuário
+ */
+export async function activateUser(uid, updatedBy) {
+
+    return await updateUser(
+
+        uid,
+
+        {
+
+            ativo: true,
+
+            updatedBy
+
+        }
+
+    );
+
+}
+
+/**
+ * Inativar usuário
+ */
+export async function deactivateUser(uid, updatedBy) {
+
+    return await updateUser(
+
+        uid,
+
+        {
+
+            ativo: false,
+
+            updatedBy
+
+        }
+
+    );
+
+}
+
+/**
+ * Exclusão lógica
+ */
+export async function softDeleteUser(uid, updatedBy) {
+
+    return await updateUser(
+
+        uid,
+
+        {
+
+            deleted: true,
+
+            updatedBy
+
+        }
+
+    );
+
+}
+
+/**
+ * Restaurar usuário
+ */
+export async function restoreUser(uid, updatedBy) {
+
+    return await updateUser(
+
+        uid,
+
+        {
+
+            deleted: false,
+
+            updatedBy
+
+        }
+
+    );
+
+}
+
+/**
+ * Alterar perfil
+ */
+export async function changeProfile(uid, perfil, updatedBy) {
+
+    return await updateUser(
+
+        uid,
+
+        {
+
+            perfil,
+
+            updatedBy
+
+        }
+
+    );
+
+}
+
+/**
+ * Atualizar último login
+ */
+export async function updateLastLogin(uid) {
+
+    return await updateUser(
+
+        uid,
+
+        {
+
+            ultimoLogin: now()
+
+        }
+
+    );
+
+}
