@@ -55,15 +55,8 @@ form.addEventListener("submit", async(event) => {
             setLoading(false);
             return;
         }
-try{
-
-    logLogin();
-
-}catch(e){
-
-    console.warn("Falha ao registrar log:",e);
-
-}
+logLogin()
+.catch(console.error);
 
 window.location.href="dashboard.html";
 
