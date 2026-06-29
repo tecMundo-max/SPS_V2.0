@@ -3,13 +3,13 @@
  * SPS v2
  * Arquivo: logger.js
  * Responsabilidade:
- * Registrar logs do sistema no Firebase.
+ * Registrar eventos do sistema.
  * ==========================================================
  */
 
-import { create } from "../firebase/database.js";
-import { DB_PATHS, AUDIT_ACTIONS } from "../config/constants.js";
-import { getCurrentUser } from "../firebase/auth.js";
+import { AUDIT_ACTIONS } from "../config/constants.js";
+import { getCurrentUser } from "./appContext.js";
+import { enqueueLog } from "./logQueue.js";
 
 /**
  * Data/Hora ISO
@@ -90,7 +90,7 @@ export async function log({
 
         };
 
-        return await create(DB_PATHS.LOGS, logData);
+        return await enqueueLog(logData);
 
     } catch (error) {
 

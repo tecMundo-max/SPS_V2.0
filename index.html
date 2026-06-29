@@ -3,21 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=login.html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPS v2</title>
 
     <link rel="icon" href="assets/logo/favicon.ico">
 
-    <script type="module">
-
-        import { getCurrentUser } from "./js/firebase/auth.js"; window.addEventListener("DOMContentLoaded", () => { const user = getCurrentUser(); if (user) { window.location.replace("dashboard.html"); return; } window.location.replace("login.html"); });
-
-    </script>
-
-    <noscript>
-        <meta http-equiv="refresh" content="0; url=login.html">
-    </noscript>
+    <script type="module" src="js/bootstrap.js"></script>
 
 </head>
 

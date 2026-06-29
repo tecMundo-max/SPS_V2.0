@@ -1,3 +1,4 @@
+/*
 < !DOCTYPE html >
     <
     html lang = "pt-BR" >
@@ -344,3 +345,153 @@ src = "js/pages/dashboard.js" >
 
 <
 /html>
+*/
+
+import { getProfile } from "../core/appContext.js";
+import { logoutUser } from "../core/authController.js";
+import { getDashboardViewData } from "../core/dashboardController.js";
+import { logError, logLogout } from "../core/logger.js";
+import { navigateToLogin } from "../router.js";
+
+let initialized = false;
+
+function setText(id, value) {
+
+    const element = document.getElementById(id);
+
+    if (element) {
+
+        element.textContent = value ?? "";
+
+    }
+
+}
+
+function renderUser() {
+
+    const profile = getProfile();
+
+    setText("userName", profile?.nome || profile?.email || "");
+
+}
+
+function renderCards(cards = {}) {
+
+    setText("cardChamadosAbertos", cards.chamadosAbertos ?? 0);
+    setText("cardEncaminhamentos", cards.encaminhamentos ?? 0);
+    setText("cardAnalise", cards.analise ?? 0);
+    setText("cardAguardando", cards.aguardando ?? 0);
+    setText("cardRespondidos", cards.respondidos ?? 0);
+    setText("cardSla", cards.sla ?? 0);
+
+}
+
+function createCell(value) {
+
+    const cell = document.createElement("td");
+    cell.textContent = value ?? "";
+
+    return cell;
+
+}
+
+function renderTable(items = []) {
+
+    const table = document.getElementById("dashboardTable");
+
+    if (!table) {
+
+        return;
+
+    }
+
+    table.textContent = "";
+
+    items.forEach((item) => {
+
+        const row = document.createElement("tr");
+
+        row.appendChild(createCell(item.status));
+        row.appendChild(createCell(item.chamado));
+        row.appendChild(createCell(item.titulo));
+        row.appendChild(createCell(item.analista));
+        row.appendChild(createCell(item.equipe));
+        row.appendChild(createCell(item.atualizadoEm));
+        row.appendChild(createCell(item.dias));
+        row.appendChild(createCell(""));
+
+        table.appendChild(row);
+
+    });
+
+}
+
+async function loadDashboard() {
+
+    const response = await getDashboardViewData();
+
+    if (!response.success) {
+
+        return;
+
+    }
+
+    renderCards(response.data.cards);
+    renderTable(response.data.ultimosEncaminhamentos);
+
+}
+
+async function handleLogout() {
+
+    try {
+
+        await logLogout();
+        await logoutUser();
+        navigateToLogin();
+
+    } catch (error) {
+
+        await logError("DASHBOARD", error);
+
+    }
+
+}
+
+export async function initializePage() {
+
+    if (initialized) {
+
+        return;
+
+    }
+
+    initialized = true;
+
+    renderUser();
+
+    const logoutButton = document.getElementById("btnLogout");
+    const refreshButton = document.getElementById("btnAtualizar");
+
+    if (logoutButton) {
+
+        logoutButton.addEventListener("click", handleLogout);
+
+    }
+
+    if (refreshButton) {
+
+        refreshButton.addEventListener("click", () => {
+
+            loadDashboard().catch((error) => {
+
+                logError("DASHBOARD", error);
+
+            });
+
+        });
+
+    }
+
+    await loadDashboard();
+
+}

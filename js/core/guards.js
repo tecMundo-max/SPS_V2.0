@@ -7,62 +7,22 @@
  * ==========================================================
  */
 
-import { hasSession, waitForSession, getUid } from "./session.js";
-import { findChild } from "../firebase/database.js";
-import { DB_PATHS, USER_ROLES } from "../config/constants.js";
+import {
+    initialize,
+    getCurrentUser,
+    getProfile as getContextProfile,
+    getPermissions,
+    isAuthenticated
+} from "./appContext.js";
 
-/**
- * Perfil carregado do usuário
- */
-let currentProfile = null;
-
-/**
- * Página de login
- */
-const LOGIN_PAGE = "../login.html";
-
-/**
- * Redireciona para login
- */
-function redirectToLogin() {
-
-    window.location.replace(LOGIN_PAGE);
-
-}
-
-/**
- * Carrega perfil do usuário
- */
-async function loadProfile() {
-
-    const uid = getUid();
-
-    if (!uid) {
-
-        return null;
-
-    }
-
-    const response = await findChild(DB_PATHS.USERS, uid);
-
-    if (!response.success) {
-
-        return null;
-
-    }
-
-    currentProfile = response.data;
-
-    return currentProfile;
-
-}
+import { USER_ROLES } from "../config/constants.js";
 
 /**
  * Retorna perfil carregado
  */
 export function getProfile() {
 
-    return currentProfile;
+    return getContextProfile();
 
 }
 
@@ -71,7 +31,7 @@ export function getProfile() {
  */
 export function getRole() {
 
-    return currentProfile ? .perfil ? ? null;
+    return getProfile()?.perfil ?? null;
 
 }
 
@@ -80,7 +40,7 @@ export function getRole() {
  */
 export function isAdmin() {
 
-    return getRole() === USER_ROLES.ADMIN;
+    return getPermissions().isAdmin;
 
 }
 
@@ -89,7 +49,7 @@ export function isAdmin() {
  */
 export function isSupervisor() {
 
-    return getRole() === USER_ROLES.SUPERVISOR;
+    return getPermissions().isSupervisor;
 
 }
 
@@ -98,7 +58,7 @@ export function isSupervisor() {
  */
 export function isOperator() {
 
-    return getRole() === USER_ROLES.OPERATOR;
+    return getPermissions().isOperator;
 
 }
 
@@ -107,7 +67,7 @@ export function isOperator() {
  */
 export function isActive() {
 
-    return currentProfile ? .ativo === true;
+    return getProfile()?.ativo === true;
 
 }
 
@@ -116,27 +76,11 @@ export function isActive() {
  */
 export async function protectPage() {
 
-    if (!hasSession()) {
+    await initialize();
 
-        try {
+    const profile = getProfile();
 
-            await waitForSession();
-
-        } catch {
-
-            redirectToLogin();
-
-            return false;
-
-        }
-
-    }
-
-    const profile = await loadProfile();
-
-    if (!profile) {
-
-        redirectToLogin();
+    if (!isAuthenticated() || !profile) {
 
         return false;
 
@@ -145,8 +89,6 @@ export async function protectPage() {
     if (!profile.ativo) {
 
         alert("Usuário desativado.");
-
-        redirectToLogin();
 
         return false;
 
@@ -170,8 +112,6 @@ export async function requireRole(...roles) {
     }
 
     if (!roles.includes(getRole())) {
-
-        window.location.replace("../dashboard.html");
 
         return false;
 
@@ -222,19 +162,13 @@ export async function requireAuthenticated() {
  */
 export function canEdit(ownerUid) {
 
-    if (isAdmin()) {
+    if (getPermissions().canEdit) {
 
         return true;
 
     }
 
-    if (isSupervisor()) {
-
-        return true;
-
-    }
-
-    return ownerUid === getUid();
+    return ownerUid === getCurrentUser()?.uid;
 
 }
 
@@ -243,7 +177,7 @@ export function canEdit(ownerUid) {
  */
 export function canDelete() {
 
-    return isAdmin();
+    return getPermissions().canDelete;
 
 }
 
@@ -252,7 +186,7 @@ export function canDelete() {
  */
 export function canManageUsers() {
 
-    return isAdmin();
+    return getPermissions().canManageUsers;
 
 }
 
@@ -261,7 +195,7 @@ export function canManageUsers() {
  */
 export function canManageSettings() {
 
-    return isAdmin();
+    return getPermissions().canManageSettings;
 
 }
 
@@ -270,7 +204,7 @@ export function canManageSettings() {
  */
 export function canExport() {
 
-    return hasSession();
+    return getPermissions().canExport;
 
 }
 
@@ -279,6 +213,6 @@ export function canExport() {
  */
 export function canViewLogs() {
 
-    return isAdmin();
+    return getPermissions().canViewLogs;
 
 }

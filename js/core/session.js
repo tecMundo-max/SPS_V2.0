@@ -7,26 +7,33 @@
  * ==========================================================
  */
 
-import { onUserStateChange, getCurrentUser } from "../firebase/auth.js";
+import {
+    initialize,
+    getCurrentUser as getContextCurrentUser,
+    setCurrentUser,
+    clear as clearContext,
+    isAuthenticated as contextIsAuthenticated,
+    refreshCurrentUser
+} from "./appContext.js";
 
-let currentSession = null;
+import {
+    onAuthStateChanged
+} from "../services/authService.js";
 
 /**
  * Inicializa a sessão
  */
-export function initSession() {
+export async function initSession() {
 
-    return new Promise((resolve) => {
+    const context = await initialize();
 
-        onUserStateChange((user) => {
+    return context.currentUser;
 
-            currentSession = user;
+}
 
-            resolve(user);
+export async function initializeSession() {
 
-        });
-
-    });
+    return await initSession();
 
 }
 
@@ -35,7 +42,7 @@ export function initSession() {
  */
 export function getSession() {
 
-    return currentSession;
+    return getContextCurrentUser();
 
 }
 
@@ -44,7 +51,7 @@ export function getSession() {
  */
 export function getUid() {
 
-    return currentSession ? .uid ? ? null;
+    return getContextCurrentUser()?.uid ?? null;
 
 }
 
@@ -53,7 +60,7 @@ export function getUid() {
  */
 export function getEmail() {
 
-    return currentSession ? .email ? ? null;
+    return getContextCurrentUser()?.email ?? null;
 
 }
 
@@ -62,7 +69,7 @@ export function getEmail() {
  */
 export function getDisplayName() {
 
-    return currentSession ? .displayName ? ? "";
+    return getContextCurrentUser()?.displayName ?? "";
 
 }
 
@@ -71,7 +78,7 @@ export function getDisplayName() {
  */
 export function getPhotoURL() {
 
-    return currentSession ? .photoURL ? ? "";
+    return getContextCurrentUser()?.photoURL ?? "";
 
 }
 
@@ -80,7 +87,7 @@ export function getPhotoURL() {
  */
 export function hasSession() {
 
-    return currentSession !== null;
+    return contextIsAuthenticated();
 
 }
 
@@ -89,9 +96,7 @@ export function hasSession() {
  */
 export function refreshSession() {
 
-    currentSession = getCurrentUser();
-
-    return currentSession;
+    return refreshCurrentUser();
 
 }
 
@@ -100,7 +105,7 @@ export function refreshSession() {
  */
 export function clearSession() {
 
-    currentSession = null;
+    clearContext();
 
 }
 
@@ -109,9 +114,9 @@ export function clearSession() {
  */
 export function watchSession(callback) {
 
-    return onUserStateChange((user) => {
+    return onAuthStateChanged((user) => {
 
-        currentSession = user;
+        setCurrentUser(user);
 
         if (typeof callback === "function") {
 
@@ -138,7 +143,7 @@ export async function waitForSession(timeout = 10000) {
 
         }, timeout);
 
-        const unsubscribe = onUserStateChange((user) => {
+        const unsubscribe = onAuthStateChanged((user) => {
 
             if (!user) {
 
@@ -148,7 +153,7 @@ export async function waitForSession(timeout = 10000) {
 
             clearTimeout(timer);
 
-            currentSession = user;
+            setCurrentUser(user);
 
             unsubscribe();
 
@@ -164,6 +169,8 @@ export async function waitForSession(timeout = 10000) {
  * Dados resumidos do usuário
  */
 export function getSessionInfo() {
+
+    const currentSession = getContextCurrentUser();
 
     if (!currentSession) {
 

@@ -1,5 +1,6 @@
-import { login, resetPassword } from "../firebase/auth.js";
+import { loginUser, recoverPassword } from "../core/authController.js";
 import { logLogin, logError } from "../core/logger.js";
+import { navigateToDefaultAuthenticatedPage } from "../router.js";
 
 const form = document.getElementById("loginForm");
 const email = document.getElementById("email");
@@ -48,7 +49,7 @@ form.addEventListener("submit", async(event) => {
     setLoading(true);
 
     try {
-        const response = await login(userEmail, userPassword);
+        const response = await loginUser(userEmail, userPassword);
 
         if (!response.success) {
             showMessage(response.message);
@@ -58,7 +59,7 @@ form.addEventListener("submit", async(event) => {
 logLogin()
 .catch(console.error);
 
-window.location.href="dashboard.html";
+navigateToDefaultAuthenticatedPage();
 
     } catch (error) {
 
@@ -86,7 +87,7 @@ btnForgotPassword.addEventListener("click", async() => {
         return;
     }
 
-    const response = await resetPassword(userEmail);
+    const response = await recoverPassword(userEmail);
 
     if (response.success) {
         showMessage(response.message, "success");
