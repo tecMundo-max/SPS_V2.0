@@ -50,7 +50,7 @@ function createUserModel(data = {}) {
 
         perfil: data.perfil || USER_PROFILES.ANALISTA,
 
-        ativo: data.ativo ? ? true,
+        ativo: data.ativo !== undefined ? data.ativo : true,
 
         ultimoLogin: data.ultimoLogin || 0,
 
