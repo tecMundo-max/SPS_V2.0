@@ -3,7 +3,7 @@
  * SPS v2
  * Arquivo: js/core/appContext.js
  * Responsabilidade:
- * Contexto central da aplicacao e sessao.
+ * Contexto central da aplicação e sessão.
  * ==========================================================
  */
 
@@ -16,7 +16,9 @@ import {
     getUserProfile
 } from "../services/usersService.js";
 
-import { USER_ROLES } from "../config/constants.js";
+import {
+    USER_PROFILES
+} from "../config/constants.js";
 
 const context = {
     currentUser: null,
@@ -31,28 +33,34 @@ let initializePromise = null;
 
 function createPermissions(profile) {
 
-    const role = profile?.perfil ?? null;
-    const active = profile?.ativo === true;
+    const role = profile ? profile.perfil : null;
+    const active = profile ? profile.ativo === true : false;
 
     return {
+
         role,
         active,
-        isAdmin: role === USER_ROLES.ADMIN,
-        isSupervisor: role === USER_ROLES.SUPERVISOR,
-        isOperator: role === USER_ROLES.OPERATOR,
-        canEdit: role === USER_ROLES.ADMIN || role === USER_ROLES.SUPERVISOR,
-        canDelete: role === USER_ROLES.ADMIN,
-        canManageUsers: role === USER_ROLES.ADMIN,
-        canManageSettings: role === USER_ROLES.ADMIN,
+
+        isSupervisor: role === USER_PROFILES.SUPERVISOR,
+        isAnalista: role === USER_PROFILES.ANALISTA,
+
+        canEdit: role === USER_PROFILES.SUPERVISOR,
+        canDelete: role === USER_PROFILES.SUPERVISOR,
+
+        canManageUsers: role === USER_PROFILES.SUPERVISOR,
+        canManageSettings: role === USER_PROFILES.SUPERVISOR,
+
         canExport: active,
-        canViewLogs: role === USER_ROLES.ADMIN
+
+        canViewLogs: role === USER_PROFILES.SUPERVISOR
+
     };
 
 }
 
 async function loadProfile(user) {
 
-    if (!user?.uid) {
+    if (!user || !user.uid) {
 
         setProfile(null);
         setPermissions(createPermissions(null));
@@ -87,6 +95,7 @@ async function applyAuthUser(user) {
 
         setProfile(null);
         setPermissions(createPermissions(null));
+
         context.initialized = true;
 
         return context;
@@ -126,6 +135,7 @@ export async function initialize() {
             if (!resolved) {
 
                 resolved = true;
+
                 resolve(context);
 
             }
@@ -170,7 +180,13 @@ export function setPermissions(permissions) {
 
 export function getPermissions() {
 
-    return context.permissions || createPermissions(context.profile);
+    if (context.permissions) {
+
+        return context.permissions;
+
+    }
+
+    return createPermissions(context.profile);
 
 }
 
@@ -179,6 +195,7 @@ export function clear() {
     if (authUnsubscribe) {
 
         authUnsubscribe();
+
         authUnsubscribe = null;
 
     }
@@ -188,6 +205,7 @@ export function clear() {
     context.permissions = createPermissions(null);
     context.settings = null;
     context.initialized = false;
+
     initializePromise = null;
 
 }
@@ -207,14 +225,22 @@ export function refreshCurrentUser() {
 }
 
 export default {
+
     initialize,
+
     setCurrentUser,
     getCurrentUser,
+
     setProfile,
     getProfile,
+
     setPermissions,
     getPermissions,
+
     clear,
+
     isAuthenticated,
+
     refreshCurrentUser
+
 };
