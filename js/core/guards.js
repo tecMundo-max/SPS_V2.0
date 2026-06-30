@@ -15,7 +15,9 @@ import {
     isAuthenticated
 } from "./appContext.js";
 
-import { USER_ROLES } from "../config/constants.js";
+import {
+    USER_PROFILES
+} from "../config/constants.js";
 
 /**
  * Retorna perfil carregado
@@ -27,20 +29,19 @@ export function getProfile() {
 }
 
 /**
- * Retorna papel do usuário
+ * Retorna perfil do usuário
  */
 export function getRole() {
 
-    return getProfile()?.perfil ?? null;
+    const profile = getProfile();
 
-}
+    if (!profile) {
 
-/**
- * Usuário é Administrador
- */
-export function isAdmin() {
+        return null;
 
-    return getPermissions().isAdmin;
+    }
+
+    return profile.perfil;
 
 }
 
@@ -54,11 +55,11 @@ export function isSupervisor() {
 }
 
 /**
- * Usuário é Operador
+ * Usuário é Analista
  */
-export function isOperator() {
+export function isAnalista() {
 
-    return getPermissions().isOperator;
+    return getPermissions().isAnalista;
 
 }
 
@@ -67,7 +68,15 @@ export function isOperator() {
  */
 export function isActive() {
 
-    return getProfile()?.ativo === true;
+    const profile = getProfile();
+
+    if (!profile) {
+
+        return false;
+
+    }
+
+    return profile.ativo === true;
 
 }
 
@@ -80,7 +89,13 @@ export async function protectPage() {
 
     const profile = getProfile();
 
-    if (!isAuthenticated() || !profile) {
+    if (!isAuthenticated()) {
+
+        return false;
+
+    }
+
+    if (!profile) {
 
         return false;
 
@@ -99,7 +114,7 @@ export async function protectPage() {
 }
 
 /**
- * Permissão mínima
+ * Exige um ou mais perfis
  */
 export async function requireRole(...roles) {
 
@@ -111,54 +126,39 @@ export async function requireRole(...roles) {
 
     }
 
-    if (!roles.includes(getRole())) {
-
-        return false;
-
-    }
-
-    return true;
+    return roles.includes(getRole());
 
 }
 
 /**
- * Apenas Administrador
- */
-export async function requireAdmin() {
-
-    return await requireRole(
-
-        USER_ROLES.ADMIN
-
-    );
-
-}
-
-/**
- * Administrador ou Supervisor
+ * Apenas Supervisor
  */
 export async function requireSupervisor() {
 
     return await requireRole(
 
-        USER_ROLES.ADMIN,
-        USER_ROLES.SUPERVISOR
+        USER_PROFILES.SUPERVISOR
 
     );
 
 }
 
 /**
- * Todos autenticados
+ * Supervisor ou Analista
  */
 export async function requireAuthenticated() {
 
-    return await protectPage();
+    return await requireRole(
+
+        USER_PROFILES.SUPERVISOR,
+        USER_PROFILES.ANALISTA
+
+    );
 
 }
 
 /**
- * Pode editar registro?
+ * Pode editar?
  */
 export function canEdit(ownerUid) {
 
@@ -168,7 +168,15 @@ export function canEdit(ownerUid) {
 
     }
 
-    return ownerUid === getCurrentUser()?.uid;
+    const user = getCurrentUser();
+
+    if (!user) {
+
+        return false;
+
+    }
+
+    return ownerUid === user.uid;
 
 }
 
