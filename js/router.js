@@ -41,11 +41,11 @@ const ROUTES = Object.freeze({
     },
     "/usuarios.html": {
         protected: true,
-        roles: ["admin"]
+        roles: ["SUPERVISOR"]
     },
     "/configuracoes.html": {
         protected: true,
-        roles: ["admin"]
+        roles: ["SUPERVISOR"]
     }
 });
 
@@ -88,7 +88,7 @@ function hasRequiredRole(route) {
 
     }
 
-    return route.roles.includes(getProfile()?.perfil);
+    return route.roles.includes(getProfile() ? .perfil);
 
 }
 
@@ -100,7 +100,8 @@ async function loadRouteModule(route) {
 
     }
 
-    const module = await import(route.module);
+    const module = await
+    import (route.module);
 
     if (typeof module.initializePage === "function") {
 
@@ -127,7 +128,7 @@ export async function initialize() {
 
     }
 
-    if (route.publicOnly && isAuthenticated() && profile?.ativo === true) {
+    if (route.publicOnly && isAuthenticated() && profile ? .ativo === true) {
 
         navigateToDefaultAuthenticatedPage();
 
@@ -137,11 +138,10 @@ export async function initialize() {
 
     }
 
-    if (route.protected && (
-        !isAuthenticated() ||
-        !profile ||
-        profile.ativo !== true
-    )) {
+    if (route.protected && (!isAuthenticated() ||
+            !profile ||
+            profile.ativo !== true
+        )) {
 
         navigateToLogin();
 
