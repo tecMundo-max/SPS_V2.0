@@ -50,115 +50,97 @@ const ROUTES = Object.freeze({
 });
 
 function getPathname() {
-
     return window.location.pathname.replace(/\\/g, "/");
-
 }
 
 function getRoute() {
-
     const pathname = getPathname();
+
     const routeName = Object.keys(ROUTES).find((route) => {
-
         return pathname.endsWith(route);
-
     });
 
     return ROUTES[routeName] || {
         protected: true
     };
-
 }
 
 function redirectTo(page) {
-
     if (!window.location.pathname.endsWith(page)) {
-
         window.location.replace(page);
-
     }
-
 }
 
 function hasRequiredRole(route) {
-
     if (!route.roles || !route.roles.length) {
-
         return true;
-
     }
 
     return route.roles.includes(getProfile() ? .perfil);
-
 }
 
 async function loadRouteModule(route) {
-
     if (!route.module) {
-
         return null;
-
     }
 
     const module = await
     import (route.module);
 
     if (typeof module.initializePage === "function") {
-
         await module.initializePage();
-
     }
 
     return module;
-
 }
 
 export async function initialize() {
-
     const route = getRoute();
     const profile = getProfile();
 
     if (route.entry) {
-
         navigateToDefaultRoute();
 
         return {
             redirected: true
         };
-
     }
 
-    if (route.publicOnly && isAuthenticated() && profile ? .ativo === true) {
-
+    if (
+        route.publicOnly &&
+        isAuthenticated() &&
+        profile ? .ativo === true
+    ) {
         navigateToDefaultAuthenticatedPage();
 
         return {
             redirected: true
         };
-
     }
 
-    if (route.protected && (!isAuthenticated() ||
+    if (
+        route.protected &&
+        (!isAuthenticated() ||
             !profile ||
             profile.ativo !== true
-        )) {
-
+        )
+    ) {
         navigateToLogin();
 
         return {
             redirected: true
         };
-
     }
 
-    if (route.protected && !hasRequiredRole(route)) {
-
+    if (
+        route.protected &&
+        !hasRequiredRole(route)
+    ) {
         navigateToDefaultAuthenticatedPage();
 
         return {
             redirected: true
         };
-
     }
 
     await loadRouteModule(route);
@@ -166,32 +148,23 @@ export async function initialize() {
     return {
         redirected: false
     };
-
 }
 
 export function navigateToDefaultRoute() {
-
     if (isAuthenticated()) {
-
         navigateToDefaultAuthenticatedPage();
         return;
-
     }
 
     navigateToLogin();
-
 }
 
 export function navigateToDefaultAuthenticatedPage() {
-
     redirectTo(DEFAULT_AUTHENTICATED_PAGE);
-
 }
 
 export function navigateToLogin() {
-
     redirectTo(LOGIN_PAGE);
-
 }
 
 export default {
