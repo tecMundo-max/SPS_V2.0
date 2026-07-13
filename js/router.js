@@ -72,7 +72,7 @@ function redirectTo(page) {
 }
 
 function hasRequiredRole(route) {
-    if (!route.roles || !route.roles.length) {
+    if (!route.roles || route.roles.length === 0) {
         return true;
     }
 
