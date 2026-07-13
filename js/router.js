@@ -76,7 +76,7 @@ function hasRequiredRole(route) {
         return true;
     }
 
-    return route.roles.includes(getProfile() ? .perfil);
+    return route.roles.includes(getProfile()?.perfil);
 }
 
 async function loadRouteModule(route) {
