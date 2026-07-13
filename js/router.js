@@ -109,7 +109,7 @@ export async function initialize() {
     if (
         route.publicOnly &&
         isAuthenticated() &&
-        profile?.ativo === true
+      profile?.ativo === true
     ) {
         navigateToDefaultAuthenticatedPage();
 
