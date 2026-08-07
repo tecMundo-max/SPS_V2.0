@@ -9,11 +9,45 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- CSS Personalizado -->
     <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* Estilos específicos da página de chamados */
+        .card-header {
+            font-weight: bold;
+        }
+        
+        #formChamado .form-label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .table th {
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        
+        .table td {
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+        
+        .badge {
+            font-size: 0.8rem;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.15rem 0.4rem;
+            font-size: 0.8rem;
+        }
+    </style>
 </head>
 <body>
-    <!-- Navbar -->
+    <!-- Navbar SPS V2 -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="dashboard.html">
@@ -55,76 +89,208 @@
     </nav>
 
     <!-- Conteúdo Principal -->
-    <div class="container-fluid mt-4">
-        <!-- Filtros -->
-        <div class="card mb-4">
+    <div class="container-fluid mt-3">
+        
+        <!-- ============================================================ -->
+        <!-- SEÇÃO 1 - INCLUSÃO DE CHAMADO -->
+        <!-- ============================================================ -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle"></i> Inclusão de Chamado
+                </h5>
+            </div>
             <div class="card-body">
-                <div class="row align-items-end">
-                    <div class="col-md-2">
-                        <label class="form-label">Data Inicial</label>
-                        <input type="date" class="form-control" id="dataInicial">
+                <form id="formChamado">
+                    <!-- Linha 1: Analista, Data/Hora, Chamado -->
+                    <div class="row mb-2">
+                        <div class="col-md-3">
+                            <label class="form-label">Analista:</label>
+                            <input type="text" class="form-control form-control-sm" id="analista" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Data/Hora:</label>
+                            <input type="text" class="form-control form-control-sm" id="dataHora" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Chamado:</label>
+                            <input type="text" class="form-control form-control-sm" id="chamado" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">MSISDN:</label>
+                            <input type="text" class="form-control form-control-sm" id="msisdn" placeholder="(99) 99999-9999" maxlength="15">
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Data Final</label>
-                        <input type="date" class="form-control" id="dataFinal">
+
+                    <!-- Linha 2: Equipamento, Cenário -->
+                    <div class="row mb-2">
+                        <div class="col-md-3">
+                            <label class="form-label">Equipamento:</label>
+                            <select class="form-select form-select-sm" id="equipamento">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cenário:</label>
+                            <select class="form-select form-select-sm" id="cenario">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Observações:</label>
+                            <textarea class="form-control form-control-sm" id="observacoes" rows="2"></textarea>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" id="filtroStatus">
-                            <option value="TODOS">Todos</option>
-                            <option value="ABERTO">Aberto</option>
-                            <option value="EM_ANDAMENTO">Em Andamento</option>
-                            <option value="FECHADO">Fechado</option>
-                            <option value="CANCELADO">Cancelado</option>
-                        </select>
+
+                    <!-- Linha 3: E-mail, Flag, Título do Email -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">E-mail:</label>
+                            <input type="email" class="form-control form-control-sm" id="email" placeholder="email@exemplo.com">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">s/n flag:</label>
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input" type="checkbox" id="flag">
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label">Título do Email:</label>
+                            <input type="text" class="form-control form-control-sm" id="tituloEmail" placeholder="Título do email">
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Analista</label>
-                        <input type="text" class="form-control" id="filtroAnalista" placeholder="Nome do analista">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Buscar</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="inputBusca" placeholder="Cliente, linha...">
-                            <button class="btn btn-primary" id="btnBuscar">
-                                <i class="bi bi-search"></i>
+
+                    <!-- Botões -->
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-primary btn-sm" id="btnSalvar">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnCancelar">
+                                <i class="fas fa-times"></i> Cancelar
                             </button>
                         </div>
                     </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- CARDS DE STATUS -->
+        <!-- ============================================================ -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="card border-danger">
+                    <div class="card-body text-center py-2">
+                        <h6 class="text-danger mb-1">ABERTO</h6>
+                        <h3 id="cardAberto" class="text-danger mb-0">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center py-2">
+                        <h6 class="text-warning mb-1">EXECUÇÃO</h6>
+                        <h3 id="cardExecucao" class="text-warning mb-0">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-info">
+                    <div class="card-body text-center py-2">
+                        <h6 class="text-info mb-1">AGUARDANDO</h6>
+                        <h3 id="cardAguardando" class="text-info mb-0">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center py-2">
+                        <h6 class="text-success mb-1">FINALIZADO</h6>
+                        <h3 id="cardFinalizado" class="text-success mb-0">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SEÇÃO 2 - PESQUISA -->
+        <!-- ============================================================ -->
+        <div class="card mb-3">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-search"></i> Pesquisa
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-end">
                     <div class="col-md-2">
-                        <button class="btn btn-outline-secondary w-100" id="btnLimparFiltros">
-                            <i class="bi bi-x-circle"></i> Limpar
+                        <label class="form-label">Número:</label>
+                        <input type="text" class="form-control form-control-sm" id="buscaNumero" placeholder="Nº chamado">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">MSISDN:</label>
+                        <input type="text" class="form-control form-control-sm" id="buscaMSISDN" placeholder="(99) 99999-9999">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Cliente:</label>
+                        <input type="text" class="form-control form-control-sm" id="buscaCliente" placeholder="Nome/Email">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Status:</label>
+                        <select class="form-select form-select-sm" id="filtroStatus">
+                            <option value="TODOS">Todos</option>
+                            <option value="ABERTO">Aberto</option>
+                            <option value="EXECUCAO">Execução</option>
+                            <option value="AGUARDANDO">Aguardando</option>
+                            <option value="FINALIZADO">Finalizado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Data Inicial:</label>
+                        <input type="date" class="form-control form-control-sm" id="dataInicial">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Data Final:</label>
+                        <input type="date" class="form-control form-control-sm" id="dataFinal">
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <button class="btn btn-primary btn-sm" id="btnBuscar">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" id="btnLimparFiltros">
+                            <i class="fas fa-times"></i> Limpar
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Botão Novo Chamado -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">
-                <i class="bi bi-list-ul"></i> Lista de Chamados
-            </h4>
-            <button class="btn btn-success" id="btnNovoChamado">
-                <i class="bi bi-plus-circle"></i> Novo Chamado
-            </button>
-        </div>
-
-        <!-- Tabela de Chamados -->
+        <!-- ============================================================ -->
+        <!-- SEÇÃO 3 - RESULTADO DA PESQUISA -->
+        <!-- ============================================================ -->
         <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> Resultado da Pesquisa
+                </h5>
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover table-striped mb-0">
                         <thead class="table-dark">
                             <tr>
-                                <th>ID</th>
-                                <th>Data</th>
-                                <th>Cliente</th>
-                                <th>Linha</th>
-                                <th>Status</th>
-                                <th>Fila</th>
+                                <th>Número</th>
+                                <th>Data/Hora</th>
                                 <th>Analista</th>
-                                <th>Última Atualização</th>
+                                <th>MSISDN</th>
+                                <th>Equipamento</th>
+                                <th>Cenário</th>
+                                <th>E-mail</th>
+                                <th>Status</th>
+                                <th>Observações</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -135,83 +301,11 @@
                 </div>
             </div>
             
-            <!-- Paginação -->
+            <!-- Rodapé com info e paginação -->
             <div class="card-footer">
                 <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted" id="infoRegistros">
-                        Carregando...
-                    </small>
-                    <div id="paginacaoChamados">
-                        <!-- Paginação gerada via JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Chamado (Novo/Editar) -->
-    <div class="modal fade" id="modalChamado" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="modalChamadoTitle">
-                        <i class="bi bi-plus-circle"></i> Novo Chamado
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formChamado">
-                        <input type="hidden" id="chamadoId">
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Cliente *</label>
-                                <input type="text" class="form-control" id="cliente" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Linha *</label>
-                                <input type="text" class="form-control" id="linha" required>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Fila</label>
-                                <select class="form-select" id="fila">
-                                    <option value="GERAL">Geral</option>
-                                    <option value="SUPORTE">Suporte</option>
-                                    <option value="REDE">Rede</option>
-                                    <option value="SISTEMAS">Sistemas</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Analista</label>
-                                <input type="text" class="form-control" id="analista">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="status">
-                                    <option value="ABERTO">Aberto</option>
-                                    <option value="EM_ANDAMENTO">Em Andamento</option>
-                                    <option value="FECHADO">Fechado</option>
-                                    <option value="CANCELADO">Cancelado</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Observação</label>
-                            <textarea class="form-control" id="observacao" rows="4"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> Cancelar
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="window.salvarChamado()">
-                        <i class="bi bi-check-circle"></i> Salvar
-                    </button>
+                    <small class="text-muted" id="infoRegistros">Carregando...</small>
+                    <div id="paginacaoChamados"></div>
                 </div>
             </div>
         </div>
@@ -227,7 +321,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Firebase -->
+    <!-- Firebase Module -->
     <script type="module">
         import { initChamados } from './js/pages/chamados.js';
         
