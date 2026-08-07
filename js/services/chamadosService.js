@@ -1,6 +1,6 @@
 // js/services/chamadosService.js
-import { database } from '../config/firebase.js';
-import { ref, get, set, update, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { db } from '../config/firebase.js';
+import { ref, get, set, update, push } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
 export const chamadosService = {
     /**
@@ -8,7 +8,7 @@ export const chamadosService = {
      */
     async buscarListas() {
         try {
-            const listasRef = ref(database, 'listas');
+            const listasRef = ref(db, 'listas');
             const snapshot = await get(listasRef);
             
             if (snapshot.exists()) {
@@ -30,7 +30,7 @@ export const chamadosService = {
      */
     async gerarNumeroChamado() {
         try {
-            const chamadosRef = ref(database, 'chamados');
+            const chamadosRef = ref(db, 'chamados');
             const snapshot = await get(chamadosRef);
             
             if (!snapshot.exists()) {
@@ -41,7 +41,7 @@ export const chamadosService = {
             snapshot.forEach((childSnapshot) => {
                 const chamado = childSnapshot.val();
                 const numero = parseInt(chamado.numero || chamado.chamado || '0');
-                if (numero > maiorNumero) {
+                if (!isNaN(numero) && numero > maiorNumero) {
                     maiorNumero = numero;
                 }
             });
@@ -58,7 +58,7 @@ export const chamadosService = {
      */
     async listarChamados() {
         try {
-            const chamadosRef = ref(database, 'chamados');
+            const chamadosRef = ref(db, 'chamados');
             const snapshot = await get(chamadosRef);
             
             if (!snapshot.exists()) {
@@ -75,8 +75,8 @@ export const chamadosService = {
 
             // Ordenar por data (mais recente primeiro)
             return chamados.sort((a, b) => {
-                const dateA = new Date(b.dataHora || b.criadoEm || 0);
-                const dateB = new Date(a.dataHora || a.criadoEm || 0);
+                const dateA = new Date(b.criadoEm || 0);
+                const dateB = new Date(a.criadoEm || 0);
                 return dateA - dateB;
             });
         } catch (error) {
@@ -90,7 +90,7 @@ export const chamadosService = {
      */
     async criarChamado(dados) {
         try {
-            const chamadosRef = ref(database, 'chamados');
+            const chamadosRef = ref(db, 'chamados');
             const novoChamadoRef = push(chamadosRef);
             
             const numero = await this.gerarNumeroChamado();
@@ -99,7 +99,7 @@ export const chamadosService = {
                 numero: numero,
                 analista: dados.analista || '',
                 dataHora: dados.dataHora || new Date().toLocaleString('pt-BR'),
-                chamado: dados.chamado || numero,
+                chamado: numero,
                 msisdn: dados.msisdn || '',
                 equipamento: dados.equipamento || '',
                 cenario: dados.cenario || '',
@@ -107,12 +107,14 @@ export const chamadosService = {
                 email: dados.email || '',
                 flag: dados.flag || false,
                 tituloEmail: dados.tituloEmail || '',
-                status: 'ABERTO',
+                status: dados.status || 'ABERTO',
                 criadoEm: new Date().toISOString(),
                 atualizadoEm: new Date().toISOString()
             };
 
             await set(novoChamadoRef, chamado);
+            
+            console.log('✅ Chamado criado:', chamado);
             
             return {
                 id: novoChamadoRef.key,
@@ -129,14 +131,17 @@ export const chamadosService = {
      */
     async atualizarChamado(id, dados) {
         try {
-            const chamadoRef = ref(database, `chamados/${id}`);
+            const chamadoRef = ref(db, `chamados/${id}`);
             
             const atualizacao = {
                 ...dados,
-                atualizadoEm: new Date().toISOString()
+                atualizadoEm: new Date().toISOString(),
+                dataHora: dados.dataHora || new Date().toLocaleString('pt-BR')
             };
 
             await update(chamadoRef, atualizacao);
+            
+            console.log('✅ Chamado atualizado:', id);
             
             return {
                 id,
@@ -159,18 +164,20 @@ export const chamadosService = {
                 let atendeFiltro = true;
 
                 if (filtros.numero) {
-                    if (!chamado.numero?.includes(filtros.numero)) atendeFiltro = false;
+                    const numeroChamado = chamado.numero || chamado.chamado || '';
+                    if (!numeroChamado.includes(filtros.numero)) atendeFiltro = false;
                 }
 
                 if (filtros.msisdn) {
-                    const msisdnLimpo = chamado.msisdn?.replace(/\D/g, '');
+                    const msisdnLimpo = (chamado.msisdn || '').replace(/\D/g, '');
                     const filtroLimpo = filtros.msisdn.replace(/\D/g, '');
-                    if (!msisdnLimpo?.includes(filtroLimpo)) atendeFiltro = false;
+                    if (!msisdnLimpo.includes(filtroLimpo)) atendeFiltro = false;
                 }
 
                 if (filtros.cliente) {
                     const termo = filtros.cliente.toLowerCase();
-                    if (!chamado.cliente?.toLowerCase().includes(termo)) atendeFiltro = false;
+                    const email = (chamado.email || '').toLowerCase();
+                    if (!email.includes(termo)) atendeFiltro = false;
                 }
 
                 if (filtros.status && filtros.status !== 'TODOS') {
@@ -178,13 +185,13 @@ export const chamadosService = {
                 }
 
                 if (filtros.dataInicial) {
-                    const dataChamado = new Date(chamado.criadoEm);
+                    const dataChamado = new Date(chamado.criadoEm || 0);
                     const dataInicial = new Date(filtros.dataInicial);
                     if (dataChamado < dataInicial) atendeFiltro = false;
                 }
 
                 if (filtros.dataFinal) {
-                    const dataChamado = new Date(chamado.criadoEm);
+                    const dataChamado = new Date(chamado.criadoEm || 0);
                     const dataFinal = new Date(filtros.dataFinal);
                     dataFinal.setHours(23, 59, 59, 999);
                     if (dataChamado > dataFinal) atendeFiltro = false;
@@ -222,7 +229,7 @@ export const chamadosService = {
      */
     async buscarChamado(id) {
         try {
-            const chamadoRef = ref(database, `chamados/${id}`);
+            const chamadoRef = ref(db, `chamados/${id}`);
             const snapshot = await get(chamadoRef);
             
             if (!snapshot.exists()) {
