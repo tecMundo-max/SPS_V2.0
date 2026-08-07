@@ -1,148 +1,573 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPS v2 - Dashboard</title>
-
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/tables.css">
+    <title>SPS V2 - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .stats-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--claro-vermelho) !important;
+        }
+        .filter-active {
+            background-color: var(--claro-vermelho) !important;
+            border-color: var(--claro-vermelho) !important;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .progress {
+            height: 25px;
+            background-color: var(--bg-input);
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, var(--claro-vermelho) 0%, var(--claro-vermelho-claro) 100%);
+            font-weight: 600;
+        }
+    </style>
 </head>
-
 <body>
-
-    <header class="topbar">
-
-        <div class="logo">
-            <strong>SPS v2</strong>
-        </div>
-
-        <nav class="menu">
-
-            <a href="dashboard.html" class="active">Dashboard</a>
-
-            <a href="chamados.html">Chamados</a>
-
-            <a href="encaminhamentos.html">Encaminhamentos</a>
-
-            <a href="relatorios.html">Relatórios</a>
-
-            <a href="usuarios.html">Usuários</a>
-
-            <a href="configuracoes.html">Configurações</a>
-
-        </nav>
-
-        <div class="user-area">
-
-            <span id="userName"></span>
-
-            <button id="btnLogout">
-            Sair
-        </button>
-
-        </div>
-
-    </header>
-
-    <main class="dashboard">
-
-        <section class="cards">
-
-            <article class="card">
-                <h3>Chamados Abertos</h3>
-                <span id="cardChamadosAbertos">0</span>
-            </article>
-
-            <article class="card">
-                <h3>Encaminhamentos</h3>
-                <span id="cardEncaminhamentos">0</span>
-            </article>
-
-            <article class="card">
-                <h3>Em Análise</h3>
-                <span id="cardAnalise">0</span>
-            </article>
-
-            <article class="card">
-                <h3>Aguardando Retorno</h3>
-                <span id="cardAguardando">0</span>
-            </article>
-
-            <article class="card">
-                <h3>Respondidos</h3>
-                <span id="cardRespondidos">0</span>
-            </article>
-
-            <article class="card">
-                <h3>SLA Vencido</h3>
-                <span id="cardSla">0</span>
-            </article>
-
-        </section>
-
-        <section class="dashboard-table">
-
-            <div class="table-header">
-
-                <h2>Últimos Encaminhamentos</h2>
-
-                <button id="btnAtualizar">
-                Atualizar
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-speedometer2"></i> <strong>SPS V2</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
             </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="chamados.html">
+                            <i class="bi bi-telephone"></i> Chamados
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="chamados_adm.html">
+                            <i class="bi bi-telephone-fill"></i> Chamados Admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="encaminhamentos.html">
+                            <i class="bi bi-envelope"></i> Encaminhamentos
+                        </a>
+                    </li>
+                </ul>
+                <span class="navbar-text me-3" id="userInfo">
+                    <i class="bi bi-person-circle"></i> Carregando...
+                </span>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> Sair
+                </button>
+            </div>
+        </div>
+    </nav>
 
+    <!-- Conteúdo Principal -->
+    <div class="container-fluid mt-3">
+        
+        <!-- Filtros Rápidos -->
+        <div class="section-container mb-4">
+            <div class="section-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5><i class="bi bi-funnel"></i> Filtros Rápidos</h5>
+                    <small class="text-muted">Clique para filtrar os dados do dashboard</small>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-light me-2" onclick="filtrarPor('hoje')" id="btnHoje">
+                        <i class="bi bi-calendar-check"></i> Hoje
+                    </button>
+                    <button class="btn btn-sm btn-outline-light me-2" onclick="filtrarPor('semana')" id="btnSemana">
+                        <i class="bi bi-calendar-week"></i> Esta Semana
+                    </button>
+                    <button class="btn btn-sm btn-outline-light me-2" onclick="filtrarPor('mes')" id="btnMes">
+                        <i class="bi bi-calendar-month"></i> Este Mês
+                    </button>
+                    <button class="btn btn-sm btn-outline-light" onclick="filtrarPor('todos')" id="btnTodos">
+                        <i class="bi bi-infinity"></i> Todos
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards de Estatísticas -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="stats-card" onclick="filtrarPor('hoje')">
+                    <i class="bi bi-telephone-fill"></i>
+                    <div class="stats-number" id="totalChamados">0</div>
+                    <div class="stats-label">Total de Chamados</div>
+                    <small class="text-muted" id="periodoChamados">Hoje</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-envelope-fill"></i>
+                    <div class="stats-number" id="totalEncaminhamentos">0</div>
+                    <div class="stats-label">Encaminhamentos</div>
+                    <small class="text-muted" id="periodoEncaminhamentos">Hoje</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-people-fill"></i>
+                    <div class="stats-number" id="totalAnalistas">0</div>
+                    <div class="stats-label">Analistas Ativos</div>
+                    <small class="text-muted">Hoje</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div class="stats-number" id="totalFlags">0</div>
+                    <div class="stats-label">Chamados com Flag</div>
+                    <small class="text-muted">Hoje</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Gráfico de Cenários -->
+            <div class="col-md-6">
+                <div class="section-container">
+                    <div class="section-header">
+                        <h5><i class="bi bi-pie-chart"></i> Chamados por Cenário</h5>
+                    </div>
+                    <div class="section-body">
+                        <div id="cenariosList">
+                            <p class="text-center text-muted">Carregando...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <table>
+            <!-- Gráfico de Equipamentos -->
+            <div class="col-md-6">
+                <div class="section-container">
+                    <div class="section-header">
+                        <h5><i class="bi bi-bar-chart"></i> Chamados por Equipamento</h5>
+                    </div>
+                    <div class="section-body">
+                        <div id="equipamentosList">
+                            <p class="text-center text-muted">Carregando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <thead>
+        <div class="row g-4 mt-2">
+            <!-- Últimos Chamados -->
+            <div class="col-md-7">
+                <div class="section-container">
+                    <div class="section-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-clock-history"></i> Últimos Chamados</h5>
+                        <a href="chamados.html" class="btn btn-sm btn-outline-light">
+                            Ver Todos <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="section-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Analista</th>
+                                        <th>Chamado</th>
+                                        <th>Cenário</th>
+                                        <th>Flag</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ultimosChamados">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Carregando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                    <tr>
+            <!-- Top Analistas -->
+            <div class="col-md-5">
+                <div class="section-container">
+                    <div class="section-header">
+                        <h5><i class="bi bi-trophy"></i> Top Analistas</h5>
+                    </div>
+                    <div class="section-body">
+                        <div id="topAnalistas">
+                            <p class="text-center text-muted">Carregando...</p>
+                        </div>
+                    </div>
+                </div>
 
-                        <th>Status</th>
+                <!-- Últimos Encaminhamentos -->
+                <div class="section-container mt-4">
+                    <div class="section-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-envelope-open"></i> Últimos Encaminhamentos</h5>
+                        <a href="encaminhamentos.html" class="btn btn-sm btn-outline-light">
+                            Ver Todos <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="section-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Título</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ultimosEncaminhamentos">
+                                    <tr>
+                                        <td colspan="3" class="text-center py-3">Carregando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        <th>Chamado</th>
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-                        <th>Título</th>
+    <script>
+        // Configuração Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYnvcRKt4qDpk08_4MQVNEOr9Iq95X980",
+            authDomain: "sps003hjr.firebaseapp.com",
+            databaseURL: "https://sps003hjr-default-rtdb.firebaseio.com",
+            projectId: "sps003hjr",
+            storageBucket: "sps003hjr.firebasestorage.app",
+            messagingSenderId: "294133615625",
+            appId: "1:294133615625:web:832c4db972dcb1b92cbcd8"
+        };
 
-                        <th>Analista</th>
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-                        <th>Equipe</th>
+        // Carregar usuário
+        function carregarUsuario() {
+            const dados = JSON.parse(localStorage.getItem('sps_user') || '{}');
+            if (!dados.uid) {
+                // Modo desenvolvimento
+                return {
+                    uid: 'dev',
+                    nome: 'Desenvolvedor',
+                    email: 'dev@sps.com',
+                    role: 'SUPERVISOR',
+                    admin: true
+                };
+            }
+            return dados;
+        }
 
-                        <th>Atualização</th>
+        const USUARIO = carregarUsuario();
+        let filtroAtual = 'hoje';
 
-                        <th>Dias</th>
+        // Inicializar
+        async function inicializar() {
+            console.log('🚀 Carregando Dashboard...');
+            
+            document.getElementById('userInfo').innerHTML = 
+                `<i class="bi bi-person-circle"></i> ${USUARIO.nome} (${USUARIO.role})`;
+            
+            await carregarDados();
+            
+            console.log('✅ Dashboard carregado!');
+        }
 
-                        <th>Ações</th>
+        // Período baseado no filtro
+        function getPeriodo(filtro) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            const periodos = {
+                'hoje': {
+                    inicio: hoje.getTime(),
+                    fim: new Date(hoje.getTime() + 86400000).getTime(),
+                    label: 'Hoje'
+                },
+                'semana': {
+                    inicio: new Date(hoje.getTime() - (hoje.getDay() * 86400000)).getTime(),
+                    fim: new Date().getTime(),
+                    label: 'Esta Semana'
+                },
+                'mes': {
+                    inicio: new Date(hoje.getFullYear(), hoje.getMonth(), 1).getTime(),
+                    fim: new Date().getTime(),
+                    label: 'Este Mês'
+                },
+                'todos': {
+                    inicio: 0,
+                    fim: new Date().getTime() + 86400000,
+                    label: 'Todos'
+                }
+            };
+            
+            return periodos[filtro] || periodos['hoje'];
+        }
 
-                    </tr>
+        // Carregar todos os dados
+        async function carregarDados() {
+            const periodo = getPeriodo(filtroAtual);
+            
+            try {
+                // Carregar chamados
+                const snapChamados = await database.ref('CHAMADOS').once('value');
+                const chamados = [];
+                
+                snapChamados.forEach(child => {
+                    const data = child.val();
+                    if (!data.deleted) {
+                        chamados.push({ id: child.key, ...data });
+                    }
+                });
+                
+                // Filtrar por período
+                const chamadosFiltrados = chamados.filter(c => 
+                    c.createdAt >= periodo.inicio && c.createdAt <= periodo.fim
+                );
+                
+                // Carregar encaminhamentos
+                const snapEnc = await database.ref('ENCAMINHAMENTOS').once('value');
+                const encaminhamentos = [];
+                
+                snapEnc.forEach(child => {
+                    const data = child.val();
+                    if (!data.deleted) {
+                        encaminhamentos.push({ id: child.key, ...data });
+                    }
+                });
+                
+                const encFiltrados = encaminhamentos.filter(e => 
+                    e.createdAt >= periodo.inicio && e.createdAt <= periodo.fim
+                );
+                
+                // Atualizar cards
+                document.getElementById('totalChamados').textContent = chamadosFiltrados.length;
+                document.getElementById('totalEncaminhamentos').textContent = encFiltrados.length;
+                document.getElementById('periodoChamados').textContent = periodo.label;
+                document.getElementById('periodoEncaminhamentos').textContent = periodo.label;
+                
+                // Analistas únicos
+                const analistas = [...new Set(chamadosFiltrados.map(c => c.analista).filter(Boolean))];
+                document.getElementById('totalAnalistas').textContent = analistas.length;
+                
+                // Flags
+                const flags = chamadosFiltrados.filter(c => c.flag).length;
+                document.getElementById('totalFlags').textContent = flags;
+                
+                // Cenários
+                carregarCenarios(chamadosFiltrados);
+                
+                // Equipamentos
+                carregarEquipamentos(chamadosFiltrados);
+                
+                // Últimos chamados
+                carregarUltimosChamados(chamadosFiltrados.slice(0, 10));
+                
+                // Top analistas
+                carregarTopAnalistas(chamadosFiltrados);
+                
+                // Últimos encaminhamentos
+                carregarUltimosEncaminhamentos(encFiltrados.slice(0, 5));
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados:', error);
+            }
+        }
 
-                </thead>
+        // Carregar cenários
+        function carregarCenarios(chamados) {
+            const cenarios = {};
+            chamados.forEach(c => {
+                if (c.cenario) {
+                    cenarios[c.cenario] = (cenarios[c.cenario] || 0) + 1;
+                }
+            });
+            
+            const sorted = Object.entries(cenarios).sort((a, b) => b[1] - a[1]);
+            const total = chamados.length;
+            
+            const html = sorted.slice(0, 10).map(([cen, count]) => {
+                const percent = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                return `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-light">${cen}</span>
+                            <span class="badge bg-primary">${count} (${percent}%)</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: ${percent}%">${percent}%</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('cenariosList').innerHTML = html || 
+                '<p class="text-center text-muted">Nenhum dado no período</p>';
+        }
 
-                <tbody id="dashboardTable">
+        // Carregar equipamentos
+        function carregarEquipamentos(chamados) {
+            const equipamentos = {};
+            chamados.forEach(c => {
+                if (c.equipamento) {
+                    equipamentos[c.equipamento] = (equipamentos[c.equipamento] || 0) + 1;
+                }
+            });
+            
+            const sorted = Object.entries(equipamentos).sort((a, b) => b[1] - a[1]);
+            const total = chamados.length;
+            
+            const html = sorted.slice(0, 10).map(([eq, count]) => {
+                const percent = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                return `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-light">${eq}</span>
+                            <span class="badge bg-info">${count} (${percent}%)</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: ${percent}%">${percent}%</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('equipamentosList').innerHTML = html || 
+                '<p class="text-center text-muted">Nenhum dado no período</p>';
+        }
 
-                </tbody>
+        // Últimos chamados
+        function carregarUltimosChamados(chamados) {
+            const sorted = chamados.sort((a, b) => b.createdAt - a.createdAt);
+            const tbody = document.getElementById('ultimosChamados');
+            
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Nenhum chamado no período</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = sorted.map(c => `
+                <tr>
+                    <td><small>${new Date(c.createdAt).toLocaleString('pt-BR')}</small></td>
+                    <td><span class="badge bg-secondary">${c.analista || '-'}</span></td>
+                    <td><strong>${c.chamado || '-'}</strong></td>
+                    <td>${c.cenario || '-'}</td>
+                    <td>${c.flag ? '<span class="badge bg-warning">🚩 Flag</span>' : '-'}</td>
+                </tr>
+            `).join('');
+        }
 
-            </table>
+        // Top analistas
+        function carregarTopAnalistas(chamados) {
+            const analistas = {};
+            chamados.forEach(c => {
+                if (c.analista) {
+                    analistas[c.analista] = (analistas[c.analista] || 0) + 1;
+                }
+            });
+            
+            const sorted = Object.entries(analistas).sort((a, b) => b[1] - a[1]);
+            
+            const medals = ['🥇', '🥈', '🥉'];
+            const html = sorted.slice(0, 5).map(([nome, count], index) => `
+                <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" 
+                     style="background: var(--bg-input);">
+                    <div>
+                        <span class="fs-4 me-3">${medals[index] || '⭐'}</span>
+                        <span class="text-light fw-bold">${nome}</span>
+                    </div>
+                    <span class="badge bg-primary fs-6">${count} chamados</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('topAnalistas').innerHTML = html || 
+                '<p class="text-center text-muted">Nenhum dado no período</p>';
+        }
 
-        </section>
+        // Últimos encaminhamentos
+        function carregarUltimosEncaminhamentos(encaminhamentos) {
+            const sorted = encaminhamentos.sort((a, b) => b.createdAt - a.createdAt);
+            const tbody = document.getElementById('ultimosEncaminhamentos');
+            
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Nenhum encaminhamento</td></tr>';
+                return;
+            }
+            
+            const statusColors = {
+                'Pendente': 'warning',
+                'Enviado': 'info',
+                'Respondido': 'success',
+                'Cancelado': 'danger'
+            };
+            
+            tbody.innerHTML = sorted.map(e => `
+                <tr>
+                    <td><small>${new Date(e.createdAt).toLocaleDateString('pt-BR')}</small></td>
+                    <td>${e.titulo || '-'}</td>
+                    <td><span class="badge bg-${statusColors[e.status] || 'secondary'}">${e.status || '-'}</span></td>
+                </tr>
+            `).join('');
+        }
 
-    </main>
+        // Filtrar por período
+        window.filtrarPor = function(filtro) {
+            filtroAtual = filtro;
+            
+            // Atualizar botões
+            document.querySelectorAll('#btnHoje, #btnSemana, #btnMes, #btnTodos').forEach(btn => {
+                btn.classList.remove('filter-active');
+            });
+            
+            const btnMap = {
+                'hoje': 'btnHoje',
+                'semana': 'btnSemana',
+                'mes': 'btnMes',
+                'todos': 'btnTodos'
+            };
+            
+            const btnAtivo = document.getElementById(btnMap[filtro]);
+            if (btnAtivo) btnAtivo.classList.add('filter-active');
+            
+            carregarDados();
+        };
 
-    <footer class="footer">
+        window.logout = function() {
+            localStorage.removeItem('sps_user');
+            window.location.href = 'login.html';
+        };
 
-        <span>SPS v2</span>
-
-        <span id="systemVersion">Versão 2.0</span>
-
-    </footer>
-
-    <script type="module" src="js/bootstrap.js"></script>
-
+        // Iniciar
+        window.addEventListener('DOMContentLoaded', () => {
+            inicializar();
+            // Ativar botão "Hoje" por padrão
+            document.getElementById('btnHoje').classList.add('filter-active');
+        });
+    </script>
 </body>
-
 </html>
