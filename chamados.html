@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="css/style.css">
     
     <style>
-        /* Estilos específicos da página de chamados */
         .card-header {
             font-weight: bold;
         }
@@ -47,7 +46,7 @@
     </style>
 </head>
 <body>
-    <!-- Navbar SPS V2 -->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="dashboard.html">
@@ -102,7 +101,7 @@
             </div>
             <div class="card-body">
                 <form id="formChamado">
-                    <!-- Linha 1: Analista, Data/Hora, Chamado -->
+                    <!-- Linha 1 -->
                     <div class="row mb-2">
                         <div class="col-md-3">
                             <label class="form-label">Analista:</label>
@@ -122,7 +121,7 @@
                         </div>
                     </div>
 
-                    <!-- Linha 2: Equipamento, Cenário -->
+                    <!-- Linha 2 -->
                     <div class="row mb-2">
                         <div class="col-md-3">
                             <label class="form-label">Equipamento:</label>
@@ -142,7 +141,7 @@
                         </div>
                     </div>
 
-                    <!-- Linha 3: E-mail, Flag, Título do Email -->
+                    <!-- Linha 3 -->
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label class="form-label">E-mail:</label>
@@ -172,44 +171,6 @@
                         </div>
                     </div>
                 </form>
-            </div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- CARDS DE STATUS -->
-        <!-- ============================================================ -->
-        <div class="row mb-3">
-            <div class="col-md-3">
-                <div class="card border-danger">
-                    <div class="card-body text-center py-2">
-                        <h6 class="text-danger mb-1">ABERTO</h6>
-                        <h3 id="cardAberto" class="text-danger mb-0">0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-warning">
-                    <div class="card-body text-center py-2">
-                        <h6 class="text-warning mb-1">EXECUÇÃO</h6>
-                        <h3 id="cardExecucao" class="text-warning mb-0">0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-info">
-                    <div class="card-body text-center py-2">
-                        <h6 class="text-info mb-1">AGUARDANDO</h6>
-                        <h3 id="cardAguardando" class="text-info mb-0">0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-success">
-                    <div class="card-body text-center py-2">
-                        <h6 class="text-success mb-1">FINALIZADO</h6>
-                        <h3 id="cardFinalizado" class="text-success mb-0">0</h3>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -301,7 +262,7 @@
                 </div>
             </div>
             
-            <!-- Rodapé com info e paginação -->
+            <!-- Rodapé -->
             <div class="card-footer">
                 <div class="d-flex justify-content-between align-items-center">
                     <small class="text-muted" id="infoRegistros">Carregando...</small>
