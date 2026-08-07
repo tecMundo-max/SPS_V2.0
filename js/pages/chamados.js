@@ -1,7 +1,6 @@
 // js/pages/chamados.js
 import { chamadosService } from '../services/chamadosService.js';
-import { auth } from '../firebase/config.js';  // ← CORRIGIDO
-import { router } from '../core/router.js';    // ← VERIFICAR se existe
+import { auth } from '../firebase/config.js';
 
 // Estado da página
 let estadoPagina = {
@@ -28,7 +27,7 @@ export async function initChamados() {
     try {
         const usuario = auth.currentUser;
         if (!usuario) {
-            router.navegar('login.html');
+            window.location.href = 'login.html';
             return;
         }
 
@@ -120,7 +119,6 @@ async function carregarDados() {
     try {
         mostrarLoading(true);
         estadoPagina.chamados = await chamadosService.buscarChamadosComFiltros(estadoPagina.filtros);
-        await atualizarCards();
         estadoPagina.paginaAtual = 1;
         renderizarTabela();
         renderizarPaginacao();
@@ -129,18 +127,6 @@ async function carregarDados() {
         console.error('Erro ao carregar dados:', error);
     } finally {
         mostrarLoading(false);
-    }
-}
-
-async function atualizarCards() {
-    try {
-        const stats = await chamadosService.obterEstatisticas();
-        document.getElementById('cardAberto').textContent = stats.aberto || 0;
-        document.getElementById('cardExecucao').textContent = stats.execucao || 0;
-        document.getElementById('cardAguardando').textContent = stats.aguardando || 0;
-        document.getElementById('cardFinalizado').textContent = stats.finalizado || 0;
-    } catch (error) {
-        console.error('Erro ao atualizar cards:', error);
     }
 }
 
@@ -316,7 +302,7 @@ function configurarLogout() {
     document.getElementById('btnSair')?.addEventListener('click', async () => {
         try {
             await auth.signOut();
-            router.navegar('login.html');
+            window.location.href = 'login.html';
         } catch (error) {
             console.error('Erro ao sair:', error);
         }
