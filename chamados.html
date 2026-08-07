@@ -56,50 +56,6 @@
 
     <!-- Conteúdo Principal -->
     <div class="container-fluid mt-4">
-        <!-- Cards de Estatísticas -->
-        <div class="row mb-4">
-            <div class="col-md-2">
-                <div class="card bg-primary text-white">
-                    <div class="card-body text-center">
-                        <h6 class="card-title">Total</h6>
-                        <h2 id="totalChamados" class="mb-0">0</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-warning text-dark">
-                    <div class="card-body text-center">
-                        <h6 class="card-title">Abertos</h6>
-                        <h2 id="chamadosAbertos" class="mb-0">0</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-info text-white">
-                    <div class="card-body text-center">
-                        <h6 class="card-title">Em Andamento</h6>
-                        <h2 id="chamadosEmAndamento" class="mb-0">0</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-success text-white">
-                    <div class="card-body text-center">
-                        <h6 class="card-title">Fechados</h6>
-                        <h2 id="chamadosFechados" class="mb-0">0</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-secondary text-white">
-                    <div class="card-body text-center">
-                        <h6 class="card-title">Hoje</h6>
-                        <h2 id="chamadosHoje" class="mb-0">0</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Filtros -->
         <div class="card mb-4">
             <div class="card-body">
@@ -275,7 +231,6 @@
     <script type="module">
         import { initChamados } from './js/pages/chamados.js';
         
-        // Inicializar quando o DOM estiver pronto
         document.addEventListener('DOMContentLoaded', () => {
             initChamados();
         });
