@@ -3,189 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPS V2 - Criar Usuário</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f0f0f0;
-        }
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 10px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        pre {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            cursor: pointer;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        button:hover { background: #0056b3; }
-        button.danger { background: #dc3545; }
-        button.danger:hover { background: #a71d2a; }
-        input {
-            padding: 8px;
-            margin: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 300px;
-        }
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 10px;
-        }
-    </style>
+    <title>SPS V2 - Diagnóstico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>👤 Criar Usuário no Firebase</h1>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3>🔍 Diagnóstico de Conexão Firebase</h3>
+            </div>
+            <div class="card-body">
+                <div id="status">
+                    <div class="alert alert-info">
+                        <strong>⏳ Testando conexão...</strong>
+                        <div class="spinner-border spinner-border-sm ms-2" role="status"></div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <button class="btn btn-primary" onclick="testarNovamente()">
+                        🔄 Testar Novamente
+                    </button>
+                    <button class="btn btn-success" onclick="criarDadosTeste()">
+                        🧪 Criar Dados de Teste
+                    </button>
+                    <button class="btn btn-warning" onclick="criarEstrutura()">
+                        🔧 Criar Estrutura Inicial
+                    </button>
+                </div>
+                
+                <div class="mt-3" id="detalhes" style="display:none;">
+                    <h5>📊 Detalhes da Conexão:</h5>
+                    <pre id="detalhesConexao" class="bg-light p-3"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <div class="card">
-        <h2>Status</h2>
-        <div id="status">Inicializando...</div>
-    </div>
-
-    <div class="card">
-        <h2>UID do Usuário (obrigatório)</h2>
-        <p style="color: red; font-size: 14px;">
-            ⚠️ Pegue o UID no Firebase Console → Authentication → Users
-        </p>
-        <label>UID:</label>
-        <input type="text" id="uidInput" placeholder="Cole o UID aqui...">
-    </div>
-
-    <div class="card">
-        <h2>Ações</h2>
-        <button onclick="criarUsuario()">✅ Criar Usuário</button>
-        <button onclick="verificarUsuarios()">🔍 Verificar Usuários Existentes</button>
-        <button onclick="deletarUsuario()" class="danger">🗑️ Deletar Usuário (pelo UID)</button>
-    </div>
-
-    <div class="card">
-        <h2>Resultado</h2>
-        <pre id="resultado">Aguardando ação...</pre>
-    </div>
-
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAeCrURSs0TBXlYF3TKLi4q98VwrGaKe_Q",
-            authDomain: "spsch-849e5.firebaseapp.com",
-            databaseURL: "https://spsch-849e5-default-rtdb.firebaseio.com",
-            projectId: "spsch-849e5",
-            storageBucket: "spsch-849e5.firebasestorage.app",
-            messagingSenderId: "698967090558",
-            appId: "1:698967090558:web:978781fd27b86c36203f2f"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        document.getElementById('status').innerHTML = `
-            <p>✅ Firebase inicializado</p>
-            <p>📁 Database: ${firebaseConfig.databaseURL}</p>
-            <p>📦 Project: ${firebaseConfig.projectId}</p>
-        `;
-
-        window.criarUsuario = async () => {
-            const uid = document.getElementById('uidInput').value.trim();
+        import { testarConexao, criarEstruturaInicial, criarDadosTeste } from './js/testConnection.js';
+        
+        // Funções globais
+        window.testarNovamente = async function() {
+            document.getElementById('status').innerHTML = `
+                <div class="alert alert-info">
+                    <strong>⏳ Testando conexão...</strong>
+                    <div class="spinner-border spinner-border-sm ms-2" role="status"></div>
+                </div>
+            `;
             
-            if (!uid) {
-                document.getElementById('resultado').textContent = '❌ ERRO: Informe o UID!';
-                return;
-            }
-
-            const hoje = new Date().toLocaleDateString('pt-BR');
-
-            const usuario = {
-                nome: "Helio Goes",
-                email: "helio.goes@sysmap.com.br",
-                perfil: "SUPERVISOR",
-                ativo: true,
-                criadoEm: hoje,
-                atualizadoEm: hoje,
-                ultimoLogin: hoje
-            };
-
-            try {
-                await set(ref(db, `usuarios/${uid}`), usuario);
-                
-                document.getElementById('resultado').textContent = 
-                    '✅ USUÁRIO CRIADO COM SUCESSO!\n\n' +
-                    JSON.stringify({
-                        caminho: `usuarios/${uid}`,
-                        dados: usuario
-                    }, null, 2);
-            } catch (error) {
-                document.getElementById('resultado').textContent = 
-                    '❌ ERRO AO CRIAR USUÁRIO\n\n' +
-                    JSON.stringify({ mensagem: error.message, codigo: error.code }, null, 2);
-            }
-        };
-
-        window.verificarUsuarios = async () => {
-            try {
-                const snap = await get(ref(db, 'usuarios'));
-                
-                if (snap.exists()) {
-                    const dados = snap.val();
-                    const qtd = Object.keys(dados).length;
-                    document.getElementById('resultado').textContent = 
-                        `✅ ${qtd} USUÁRIOS ENCONTRADOS\n\n` +
-                        JSON.stringify(dados, null, 2);
-                } else {
-                    document.getElementById('resultado').textContent = 
-                        '⚠️ NENHUM USUÁRIO ENCONTRADO\n\n' +
-                        'O nó "usuarios" está vazio ou não existe.';
-                }
-            } catch (error) {
-                document.getElementById('resultado').textContent = 
-                    '❌ ERRO\n\n' + JSON.stringify({ mensagem: error.message }, null, 2);
-            }
-        };
-
-        window.deletarUsuario = async () => {
-            const uid = document.getElementById('uidInput').value.trim();
+            const resultado = await testarConexao();
             
-            if (!uid) {
-                document.getElementById('resultado').textContent = '❌ ERRO: Informe o UID!';
-                return;
-            }
-
-            if (!confirm(`Tem certeza que deseja DELETAR o usuário ${uid}?`)) {
-                return;
-            }
-
-            try {
-                await remove(ref(db, `usuarios/${uid}`));
-                document.getElementById('resultado').textContent = 
-                    `✅ USUÁRIO ${uid} DELETADO COM SUCESSO!`;
-            } catch (error) {
-                document.getElementById('resultado').textContent = 
-                    '❌ ERRO AO DELETAR\n\n' + JSON.stringify({ mensagem: error.message }, null, 2);
+            if (resultado) {
+                document.getElementById('status').innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>✅ Conexão bem sucedida!</strong>
+                        Firebase está respondendo corretamente.
+                    </div>
+                `;
+            } else {
+                document.getElementById('status').innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>❌ Falha na conexão!</strong>
+                        Verifique o console (F12) para mais detalhes.
+                    </div>
+                `;
             }
         };
-
-        // Verificar automaticamente
-        setTimeout(() => window.verificarUsuarios(), 500);
+        
+        window.criarDadosTeste = async function() {
+            await criarDadosTeste();
+            alert('Dados de teste criados! Verifique o console.');
+        };
+        
+        window.criarEstrutura = async function() {
+            await criarEstruturaInicial();
+            alert('Estrutura inicial criada! Verifique o console.');
+        };
+        
+        // Teste automático
+        window.testarNovamente();
     </script>
 </body>
 </html>
