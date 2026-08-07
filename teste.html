@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPS V2 - Teste Conexão</title>
+    <title>SPS V2 - Criar Usuário</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,8 +17,6 @@
             margin: 10px 0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .success { color: green; }
-        .error { color: red; }
         pre {
             background: #1e1e1e;
             color: #d4d4d4;
@@ -38,38 +36,56 @@
             border-radius: 5px;
             font-size: 14px;
         }
-        button:hover {
-            background: #0056b3;
+        button:hover { background: #0056b3; }
+        button.danger { background: #dc3545; }
+        button.danger:hover { background: #a71d2a; }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 300px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>🔌 Teste de Conexão Firebase - SPS V2</h1>
+    <h1>👤 Criar Usuário no Firebase</h1>
     
     <div class="card">
-        <h2>Status da Conexão</h2>
+        <h2>Status</h2>
         <div id="status">Inicializando...</div>
     </div>
 
     <div class="card">
-        <h2>Testes</h2>
-        <button onclick="testarConexao()">1. Testar Conexão</button>
-        <button onclick="testarListas()">2. Buscar Listas</button>
-        <button onclick="testarChamados()">3. Buscar Chamados</button>
-        <button onclick="testarCriar()">4. Criar Chamado Teste</button>
+        <h2>UID do Usuário (obrigatório)</h2>
+        <p style="color: red; font-size: 14px;">
+            ⚠️ Pegue o UID no Firebase Console → Authentication → Users
+        </p>
+        <label>UID:</label>
+        <input type="text" id="uidInput" placeholder="Cole o UID aqui...">
+    </div>
+
+    <div class="card">
+        <h2>Ações</h2>
+        <button onclick="criarUsuario()">✅ Criar Usuário</button>
+        <button onclick="verificarUsuarios()">🔍 Verificar Usuários Existentes</button>
+        <button onclick="deletarUsuario()" class="danger">🗑️ Deletar Usuário (pelo UID)</button>
     </div>
 
     <div class="card">
         <h2>Resultado</h2>
-        <pre id="resultado">Aguardando teste...</pre>
+        <pre id="resultado">Aguardando ação...</pre>
     </div>
 
-    <!-- Firebase SDK - MESMA VERSÃO DO CONFIG -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // NOVA CONFIGURAÇÃO CORRETA
         const firebaseConfig = {
             apiKey: "AIzaSyAeCrURSs0TBXlYF3TKLi4q98VwrGaKe_Q",
             authDomain: "spsch-849e5.firebaseapp.com",
@@ -80,151 +96,96 @@
             appId: "1:698967090558:web:978781fd27b86c36203f2f"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Status
         document.getElementById('status').innerHTML = `
             <p>✅ Firebase inicializado</p>
             <p>📁 Database: ${firebaseConfig.databaseURL}</p>
             <p>📦 Project: ${firebaseConfig.projectId}</p>
         `;
 
-        // Tornar funções globais
-        window.testarConexao = async () => {
+        window.criarUsuario = async () => {
+            const uid = document.getElementById('uidInput').value.trim();
+            
+            if (!uid) {
+                document.getElementById('resultado').textContent = '❌ ERRO: Informe o UID!';
+                return;
+            }
+
+            const hoje = new Date().toLocaleDateString('pt-BR');
+
+            const usuario = {
+                nome: "Helio Goes",
+                email: "helio.goes@sysmap.com.br",
+                perfil: "SUPERVISOR",
+                ativo: true,
+                criadoEm: hoje,
+                atualizadoEm: hoje,
+                ultimoLogin: hoje
+            };
+
             try {
-                const connectedRef = ref(db, '.info/connected');
-                const snapshot = await get(connectedRef);
-                const conectado = snapshot.val();
+                await set(ref(db, `usuarios/${uid}`), usuario);
                 
-                if (conectado) {
-                    document.getElementById('resultado').textContent = 
-                        '✅ CONECTADO ao Firebase com sucesso!\n\n' +
-                        JSON.stringify({
-                            status: 'online',
-                            databaseURL: firebaseConfig.databaseURL,
-                            projectId: firebaseConfig.projectId
-                        }, null, 2);
-                } else {
-                    document.getElementById('resultado').textContent = 
-                        '❌ NÃO CONECTADO - Offline';
-                }
+                document.getElementById('resultado').textContent = 
+                    '✅ USUÁRIO CRIADO COM SUCESSO!\n\n' +
+                    JSON.stringify({
+                        caminho: `usuarios/${uid}`,
+                        dados: usuario
+                    }, null, 2);
             } catch (error) {
                 document.getElementById('resultado').textContent = 
-                    '❌ ERRO DE CONEXÃO\n\n' +
-                    JSON.stringify({
-                        mensagem: error.message,
-                        codigo: error.code
-                    }, null, 2);
+                    '❌ ERRO AO CRIAR USUÁRIO\n\n' +
+                    JSON.stringify({ mensagem: error.message, codigo: error.code }, null, 2);
             }
         };
 
-        window.testarListas = async () => {
+        window.verificarUsuarios = async () => {
             try {
-                const snap = await get(ref(db, 'listas'));
-                
-                if (snap.exists()) {
-                    document.getElementById('resultado').textContent = 
-                        '✅ LISTAS ENCONTRADAS em "listas"\n\n' +
-                        JSON.stringify(snap.val(), null, 2);
-                } else {
-                    // Tentar app/listas
-                    const snap2 = await get(ref(db, 'app/listas'));
-                    if (snap2.exists()) {
-                        document.getElementById('resultado').textContent = 
-                            '✅ LISTAS ENCONTRADAS em "app/listas"\n\n' +
-                            JSON.stringify(snap2.val(), null, 2);
-                    } else {
-                        document.getElementById('resultado').textContent = 
-                            '❌ LISTAS NÃO ENCONTRADAS\n\n' +
-                            'Caminhos tentados:\n- listas\n- app/listas\n\n' +
-                            'Verifique o Firebase Console';
-                    }
-                }
-            } catch (error) {
-                document.getElementById('resultado').textContent = 
-                    '❌ ERRO AO BUSCAR LISTAS\n\n' +
-                    JSON.stringify({
-                        mensagem: error.message,
-                        codigo: error.code
-                    }, null, 2);
-            }
-        };
-
-        window.testarChamados = async () => {
-            try {
-                const snap = await get(ref(db, 'chamados'));
+                const snap = await get(ref(db, 'usuarios'));
                 
                 if (snap.exists()) {
                     const dados = snap.val();
                     const qtd = Object.keys(dados).length;
                     document.getElementById('resultado').textContent = 
-                        `✅ ${qtd} CHAMADOS ENCONTRADOS em "chamados"\n\n` +
+                        `✅ ${qtd} USUÁRIOS ENCONTRADOS\n\n` +
                         JSON.stringify(dados, null, 2);
                 } else {
-                    const snap2 = await get(ref(db, 'app/chamados'));
-                    if (snap2.exists()) {
-                        const dados = snap2.val();
-                        const qtd = Object.keys(dados).length;
-                        document.getElementById('resultado').textContent = 
-                            `✅ ${qtd} CHAMADOS em "app/chamados"\n\n` +
-                            JSON.stringify(dados, null, 2);
-                    } else {
-                        document.getElementById('resultado').textContent = 
-                            'ℹ️ NENHUM CHAMADO ENCONTRADO\n\n' +
-                            'Caminhos tentados:\n- chamados\n- app/chamados';
-                    }
+                    document.getElementById('resultado').textContent = 
+                        '⚠️ NENHUM USUÁRIO ENCONTRADO\n\n' +
+                        'O nó "usuarios" está vazio ou não existe.';
                 }
             } catch (error) {
                 document.getElementById('resultado').textContent = 
-                    '❌ ERRO\n\n' + JSON.stringify({
-                        mensagem: error.message,
-                        codigo: error.code
-                    }, null, 2);
+                    '❌ ERRO\n\n' + JSON.stringify({ mensagem: error.message }, null, 2);
             }
         };
 
-        window.testarCriar = async () => {
-            try {
-                const novoRef = push(ref(db, 'chamados'));
-                
-                const chamado = {
-                    numero: '00001',
-                    analista: 'helio',
-                    dataHora: new Date().toLocaleString('pt-BR'),
-                    chamado: '00001',
-                    msisdn: '(11) 99999-9999',
-                    equipamento: 'RTC',
-                    cenario: 'Dados',
-                    observacoes: 'Teste de conexão',
-                    email: 'teste@teste.com',
-                    flag: false,
-                    tituloEmail: 'Teste',
-                    status: 'ABERTO',
-                    criadoEm: new Date().toISOString()
-                };
+        window.deletarUsuario = async () => {
+            const uid = document.getElementById('uidInput').value.trim();
+            
+            if (!uid) {
+                document.getElementById('resultado').textContent = '❌ ERRO: Informe o UID!';
+                return;
+            }
 
-                await set(novoRef, chamado);
-                
+            if (!confirm(`Tem certeza que deseja DELETAR o usuário ${uid}?`)) {
+                return;
+            }
+
+            try {
+                await remove(ref(db, `usuarios/${uid}`));
                 document.getElementById('resultado').textContent = 
-                    '✅ CHAMADO CRIADO COM SUCESSO!\n\n' +
-                    JSON.stringify({
-                        id: novoRef.key,
-                        caminho: 'chamados/' + novoRef.key,
-                        dados: chamado
-                    }, null, 2);
+                    `✅ USUÁRIO ${uid} DELETADO COM SUCESSO!`;
             } catch (error) {
                 document.getElementById('resultado').textContent = 
-                    '❌ ERRO AO CRIAR\n\n' + JSON.stringify({
-                        mensagem: error.message,
-                        codigo: error.code
-                    }, null, 2);
+                    '❌ ERRO AO DELETAR\n\n' + JSON.stringify({ mensagem: error.message }, null, 2);
             }
         };
 
-        // Teste automático
-        setTimeout(() => window.testarConexao(), 1000);
+        // Verificar automaticamente
+        setTimeout(() => window.verificarUsuarios(), 500);
     </script>
 </body>
 </html>
