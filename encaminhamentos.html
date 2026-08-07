@@ -9,11 +9,11 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Navbar Padrão -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">
-                <strong>SPS V2</strong> - Encaminhamentos
+                <i class="bi bi-speedometer2"></i> <strong>SPS V2</strong>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -21,47 +21,76 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html">Dashboard</a>
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="chamados.html">Chamados</a>
+                        <a class="nav-link" href="chamados.html">
+                            <i class="bi bi-telephone"></i> Chamados
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="encaminhamentos.html">Encaminhamentos</a>
+                        <a class="nav-link" href="chamados_adm.html">
+                            <i class="bi bi-telephone-fill"></i> Chamados Admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="encaminhamentos.html">
+                            <i class="bi bi-envelope"></i> Encaminhamentos
+                        </a>
                     </li>
                 </ul>
-                <span class="navbar-text text-white me-3" id="userInfo">Desenvolvedor (SUPERVISOR)</span>
+                <span class="navbar-text me-3" id="userInfo">
+                    <i class="bi bi-person-circle"></i> Carregando...
+                </span>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> Sair
+                </button>
             </div>
         </div>
     </nav>
 
     <div class="container-fluid mt-3">
-        <!-- Seção 1: Inclusão de Email -->
+        <!-- SEÇÃO 1: INCLUSÃO DE ENCAMINHAMENTO -->
         <div class="section-container mb-4">
             <div class="section-header">
                 <h5><i class="bi bi-envelope-plus"></i> Inclusão de Encaminhamento</h5>
+                <small class="text-muted">Registre um novo encaminhamento de email</small>
             </div>
             <div class="section-body">
                 <form id="formEncaminhamento">
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <label class="form-label">Analista</label>
+                            <label class="form-label">
+                                <i class="bi bi-person"></i> Analista
+                            </label>
                             <input type="text" class="form-control" id="analista" readonly>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Data/Hora</label>
+                            <label class="form-label">
+                                <i class="bi bi-calendar"></i> Data/Hora
+                            </label>
                             <input type="text" class="form-control" id="dataHora" readonly>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Título <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="titulo" placeholder="Título do encaminhamento" required>
+                            <label class="form-label">
+                                <i class="bi bi-chat-left-text"></i> Título <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="titulo" 
+                                   placeholder="Título do encaminhamento" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="email" placeholder="email@exemplo.com" required>
+                            <label class="form-label">
+                                <i class="bi bi-envelope-at"></i> Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" id="email" 
+                                   placeholder="email@exemplo.com" required>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Status</label>
+                            <label class="form-label">
+                                <i class="bi bi-check-circle"></i> Status
+                            </label>
                             <select class="form-select" id="status">
                                 <option value="Pendente">Pendente</option>
                                 <option value="Enviado">Enviado</option>
@@ -70,21 +99,26 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Flag</label>
+                            <label class="form-label">
+                                <i class="bi bi-flag"></i> Flag
+                            </label>
                             <div class="form-check mt-2">
                                 <input class="form-check-input" type="checkbox" id="flag">
                                 <label class="form-check-label" for="flag">Marcar como importante</label>
                             </div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Observações</label>
-                            <textarea class="form-control" id="observacoes" rows="3" placeholder="Detalhes do encaminhamento..."></textarea>
+                            <label class="form-label">
+                                <i class="bi bi-journal-text"></i> Observações
+                            </label>
+                            <textarea class="form-control" id="observacoes" rows="3" 
+                                      placeholder="Detalhes do encaminhamento..."></textarea>
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-success btn-lg me-2">
                                 <i class="bi bi-send"></i> Salvar Encaminhamento
                             </button>
-                            <button type="button" class="btn btn-secondary" onclick="limparFormulario()">
+                            <button type="button" class="btn btn-secondary btn-lg" onclick="limparFormulario()">
                                 <i class="bi bi-x-circle"></i> Cancelar
                             </button>
                         </div>
@@ -93,13 +127,14 @@
             </div>
         </div>
 
-        <!-- Seção 2: Pesquisa -->
+        <!-- SEÇÃO 2: PESQUISA -->
         <div class="section-container mb-4">
             <div class="section-header">
                 <h5><i class="bi bi-search"></i> Pesquisa</h5>
+                <small class="text-muted">Filtre os encaminhamentos registrados</small>
             </div>
             <div class="section-body">
-                <div class="row g-3">
+                <div class="row g-3 align-items-end">
                     <div class="col-md-2">
                         <label class="form-label">Data Inicial</label>
                         <input type="date" class="form-control" id="dataInicial">
@@ -132,41 +167,51 @@
                             <button class="btn btn-primary btn-sm" onclick="pesquisarEncaminhamentos()">
                                 <i class="bi bi-search"></i> Pesquisar
                             </button>
+                            <button class="btn btn-info btn-sm" onclick="filtrarHoje()">
+                                <i class="bi bi-calendar-check"></i> Hoje
+                            </button>
                             <button class="btn btn-secondary btn-sm" onclick="limparFiltros()">
-                                Limpar
+                                <i class="bi bi-eraser"></i> Limpar
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="mt-2">
-                    <span class="badge bg-primary">Total: <span id="totalRegistros">0</span> encaminhamentos</span>
+                <div class="mt-3">
+                    <span class="badge bg-primary fs-6">
+                        <i class="bi bi-list-check"></i> 
+                        Total: <span id="totalRegistros">0</span> encaminhamentos
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- Seção 3: Resultados -->
+        <!-- SEÇÃO 3: RESULTADOS -->
         <div class="section-container">
             <div class="section-header">
                 <h5><i class="bi bi-table"></i> Resultados</h5>
+                <small class="text-muted">Lista de encaminhamentos registrados</small>
             </div>
-            <div class="section-body">
+            <div class="section-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
+                    <table class="table table-hover mb-0">
+                        <thead>
                             <tr>
-                                <th>Data/Hora</th>
+                                <th style="width: 140px;">Data/Hora</th>
                                 <th>Analista</th>
                                 <th>Título</th>
                                 <th>Email</th>
                                 <th>Status</th>
                                 <th>Flag</th>
                                 <th>Observações</th>
-                                <th>Ações</th>
+                                <th style="width: 100px;">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="corpoTabela">
                             <tr>
-                                <td colspan="8" class="text-center">Carregando...</td>
+                                <td colspan="8" class="text-center py-5">
+                                    <i class="bi bi-hourglass-split fs-1 d-block mb-3"></i>
+                                    <p class="fs-5">Carregando encaminhamentos...</p>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -179,8 +224,10 @@
     <div class="modal fade" id="modalEdicao" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title">✏️ Editar Encaminhamento</h5>
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square"></i> Editar Encaminhamento
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -219,7 +266,9 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
                     <button type="button" class="btn btn-primary" onclick="salvarEdicao()">
                         <i class="bi bi-check-circle"></i> Salvar Alterações
                     </button>
@@ -234,7 +283,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Configuração Firebase
+        // ============================================
+        // CONFIGURAÇÃO FIREBASE
+        // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyDYnvcRKt4qDpk08_4MQVNEOr9Iq95X980",
             authDomain: "sps003hjr.firebaseapp.com",
@@ -248,19 +299,33 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         
-        const USUARIO_ATUAL = {
-            nome: 'Desenvolvedor',
-            email: 'dev@sps.com',
-            role: 'SUPERVISOR',
-            isAdmin: true
-        };
+        // ============================================
+        // CARREGAR USUÁRIO
+        // ============================================
+        function carregarUsuario() {
+            const dados = JSON.parse(localStorage.getItem('sps_user') || '{}');
+            if (!dados.uid) {
+                return {
+                    uid: 'dev',
+                    nome: 'Desenvolvedor',
+                    email: 'dev@sps.com',
+                    role: 'SUPERVISOR',
+                    admin: true
+                };
+            }
+            return dados;
+        }
 
-        // Inicializar
+        const USUARIO_ATUAL = carregarUsuario();
+
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
         async function inicializar() {
             console.log('🚀 Inicializando Encaminhamentos...');
             
-            document.getElementById('userInfo').textContent = 
-                `${USUARIO_ATUAL.nome} (${USUARIO_ATUAL.role})`;
+            document.getElementById('userInfo').innerHTML = 
+                `<i class="bi bi-person-circle"></i> ${USUARIO_ATUAL.nome} (${USUARIO_ATUAL.role})`;
             document.getElementById('analista').value = USUARIO_ATUAL.nome;
             
             atualizarDataHora();
@@ -278,7 +343,9 @@
             document.getElementById('dataHora').value = new Date().toLocaleString('pt-BR');
         }
 
-        // Salvar encaminhamento
+        // ============================================
+        // SALVAR ENCAMINHAMENTO
+        // ============================================
         async function salvarEncaminhamento(event) {
             event.preventDefault();
             
@@ -286,7 +353,7 @@
             const email = document.getElementById('email').value.trim();
             
             if (!titulo || !email) {
-                alert('Preencha os campos obrigatórios!');
+                alert('❌ Preencha os campos obrigatórios: Título e Email!');
                 return;
             }
             
@@ -295,11 +362,14 @@
                 email: email,
                 status: document.getElementById('status').value,
                 flag: document.getElementById('flag').checked,
-                observacoes: document.getElementById('observacoes').value,
+                observacoes: document.getElementById('observacoes').value.trim(),
                 analista: USUARIO_ATUAL.nome,
+                analistaEmail: USUARIO_ATUAL.email,
                 createdAt: Date.now(),
                 deleted: false
             };
+
+            console.log('💾 Salvando encaminhamento:', dados);
 
             try {
                 await database.ref('ENCAMINHAMENTOS').push(dados);
@@ -313,15 +383,18 @@
             }
         }
 
-        // Carregar encaminhamentos
+        // ============================================
+        // CARREGAR ENCAMINHAMENTOS
+        // ============================================
         async function carregarEncaminhamentos(filtros = {}) {
             try {
+                console.log('🔍 Carregando encaminhamentos...');
                 const snapshot = await database.ref('ENCAMINHAMENTOS').once('value');
                 const todos = [];
                 
                 snapshot.forEach(child => {
                     const data = child.val();
-                    if (!data.deleted || USUARIO_ATUAL.isAdmin) {
+                    if (!data.deleted || USUARIO_ATUAL.admin) {
                         todos.push({ id: child.key, ...data });
                     }
                 });
@@ -350,6 +423,8 @@
                     filtrados = filtrados.filter(e => e.createdAt <= filtros.dataFinal);
                 }
                 
+                console.log(`📊 ${filtrados.length} encaminhamentos encontrados`);
+                
                 document.getElementById('totalRegistros').textContent = filtrados.length;
                 
                 const tbody = document.getElementById('corpoTabela');
@@ -357,9 +432,10 @@
                 if (filtrados.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-                                <p class="mt-2">Nenhum encaminhamento encontrado</p>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                <p class="fs-5">Nenhum encaminhamento encontrado</p>
+                                <small class="text-muted">Use o formulário acima para registrar encaminhamentos</small>
                             </td>
                         </tr>`;
                 } else {
@@ -368,27 +444,40 @@
                             'Pendente': 'warning',
                             'Enviado': 'info',
                             'Respondido': 'success',
-                            'Cancelado': 'secondary'
+                            'Cancelado': 'danger'
                         }[e.status] || 'secondary';
+                        
+                        const statusIcon = {
+                            'Pendente': 'bi-clock',
+                            'Enviado': 'bi-send-check',
+                            'Respondido': 'bi-reply-all',
+                            'Cancelado': 'bi-x-circle'
+                        }[e.status] || 'bi-question-circle';
                         
                         return `
                             <tr>
                                 <td><small>${new Date(e.createdAt).toLocaleString('pt-BR')}</small></td>
                                 <td><span class="badge bg-secondary">${e.analista || '-'}</span></td>
                                 <td><strong>${e.titulo || '-'}</strong></td>
-                                <td>${e.email || '-'}</td>
-                                <td><span class="badge bg-${statusColor}">${e.status || '-'}</span></td>
-                                <td>${e.flag ? '🚩' : '-'}</td>
+                                <td><small>${e.email || '-'}</small></td>
+                                <td>
+                                    <span class="badge bg-${statusColor}">
+                                        <i class="bi ${statusIcon}"></i> ${e.status || '-'}
+                                    </span>
+                                </td>
+                                <td class="text-center">${e.flag ? '<span class="badge bg-warning">🚩 Flag</span>' : '-'}</td>
                                 <td><small>${e.observacoes || '-'}</small></td>
                                 <td>
-                                    <button class="btn btn-sm btn-warning" onclick="editarEncaminhamento('${e.id}')">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    ${USUARIO_ATUAL.isAdmin ? `
-                                        <button class="btn btn-sm btn-danger" onclick="excluirEncaminhamento('${e.id}')">
-                                            <i class="bi bi-trash"></i>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-warning" onclick="editarEncaminhamento('${e.id}')" title="Editar">
+                                            <i class="bi bi-pencil"></i>
                                         </button>
-                                    ` : ''}
+                                        ${USUARIO_ATUAL.admin ? `
+                                            <button class="btn btn-danger" onclick="excluirEncaminhamento('${e.id}')" title="Excluir">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        ` : ''}
+                                    </div>
                                 </td>
                             </tr>
                         `;
@@ -397,11 +486,19 @@
             } catch (error) {
                 console.error('❌ Erro:', error);
                 document.getElementById('corpoTabela').innerHTML = `
-                    <tr><td colspan="8" class="text-center text-danger">Erro ao carregar dados</td></tr>`;
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-danger">
+                            <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+                            <p>Erro ao carregar dados</p>
+                            <small>${error.message}</small>
+                        </td>
+                    </tr>`;
             }
         }
 
-        // Editar
+        // ============================================
+        // EDITAR ENCAMINHAMENTO
+        // ============================================
         window.editarEncaminhamento = async function(id) {
             try {
                 const snapshot = await database.ref(`ENCAMINHAMENTOS/${id}`).once('value');
@@ -419,50 +516,71 @@
                 }
             } catch (error) {
                 console.error('❌ Erro:', error);
-                alert('Erro ao carregar dados');
+                alert('Erro ao carregar dados do encaminhamento');
             }
         };
 
-        // Salvar edição
+        // ============================================
+        // SALVAR EDIÇÃO
+        // ============================================
         window.salvarEdicao = async function() {
             const id = document.getElementById('editId').value;
             const dados = {
-                titulo: document.getElementById('editTitulo').value,
-                email: document.getElementById('editEmail').value,
+                titulo: document.getElementById('editTitulo').value.trim(),
+                email: document.getElementById('editEmail').value.trim(),
                 status: document.getElementById('editStatus').value,
                 flag: document.getElementById('editFlag').checked,
-                observacoes: document.getElementById('editObservacoes').value,
-                updatedAt: Date.now()
+                observacoes: document.getElementById('editObservacoes').value.trim(),
+                updatedAt: Date.now(),
+                atualizadoPor: USUARIO_ATUAL.nome
             };
+            
+            if (!dados.titulo || !dados.email) {
+                alert('❌ Preencha os campos obrigatórios!');
+                return;
+            }
             
             try {
                 await database.ref(`ENCAMINHAMENTOS/${id}`).update(dados);
-                alert('✅ Encaminhamento atualizado!');
+                console.log('✅ Encaminhamento atualizado:', id);
+                alert('✅ Encaminhamento atualizado com sucesso!');
                 bootstrap.Modal.getInstance(document.getElementById('modalEdicao')).hide();
                 await carregarEncaminhamentos();
             } catch (error) {
-                alert('❌ Erro: ' + error.message);
+                console.error('❌ Erro:', error);
+                alert('❌ Erro ao atualizar: ' + error.message);
             }
         };
 
-        // Excluir
+        // ============================================
+        // EXCLUIR ENCAMINHAMENTO
+        // ============================================
         window.excluirEncaminhamento = async function(id) {
-            if (!USUARIO_ATUAL.isAdmin) {
+            if (!USUARIO_ATUAL.admin) {
                 alert('⛔ Apenas supervisores podem excluir!');
                 return;
             }
             
-            if (confirm('Tem certeza que deseja excluir?')) {
+            if (confirm('Tem certeza que deseja excluir este encaminhamento?')) {
                 try {
-                    await database.ref(`ENCAMINHAMENTOS/${id}`).update({ deleted: true });
-                    alert('✅ Excluído com sucesso!');
+                    await database.ref(`ENCAMINHAMENTOS/${id}`).update({ 
+                        deleted: true,
+                        excluidoPor: USUARIO_ATUAL.nome,
+                        excluidoEm: Date.now()
+                    });
+                    console.log('🗑️ Encaminhamento excluído:', id);
+                    alert('✅ Encaminhamento excluído com sucesso!');
                     await carregarEncaminhamentos();
                 } catch (error) {
-                    alert('❌ Erro: ' + error.message);
+                    console.error('❌ Erro:', error);
+                    alert('❌ Erro ao excluir: ' + error.message);
                 }
             }
         };
 
+        // ============================================
+        // PESQUISAR
+        // ============================================
         window.pesquisarEncaminhamentos = function() {
             const filtros = {};
             
@@ -483,6 +601,13 @@
             carregarEncaminhamentos(filtros);
         };
 
+        window.filtrarHoje = function() {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataInicial').value = hoje;
+            document.getElementById('dataFinal').value = hoje;
+            pesquisarEncaminhamentos();
+        };
+
         window.limparFiltros = function() {
             document.getElementById('dataInicial').value = '';
             document.getElementById('dataFinal').value = '';
@@ -498,6 +623,12 @@
             atualizarDataHora();
         };
 
+        window.logout = function() {
+            localStorage.removeItem('sps_user');
+            window.location.href = 'login.html';
+        };
+
+        // Iniciar
         window.addEventListener('DOMContentLoaded', inicializar);
     </script>
 </body>
