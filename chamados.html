@@ -25,6 +25,8 @@
             padding: 15px;
             border-radius: 5px;
             overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
         button {
             padding: 10px 20px;
@@ -34,6 +36,7 @@
             color: white;
             border: none;
             border-radius: 5px;
+            font-size: 14px;
         }
         button:hover {
             background: #0056b3;
@@ -41,7 +44,7 @@
     </style>
 </head>
 <body>
-    <h1>🔌 Teste de Conexão Firebase</h1>
+    <h1>🔌 Teste de Conexão Firebase - SPS V2</h1>
     
     <div class="card">
         <h2>Status da Conexão</h2>
@@ -61,138 +64,132 @@
         <pre id="resultado">Aguardando teste...</pre>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js"></script>
+    <!-- Firebase SDK - MESMA VERSÃO DO CONFIG -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, push, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    <script>
-        // Configuração do Firebase
+        // NOVA CONFIGURAÇÃO CORRETA
         const firebaseConfig = {
-            apiKey: "AIzaSyDYnvcRKt4qDpk08_4MQVNEOr9Iq95X980",
-            authDomain: "sps003hjr.firebaseapp.com",
-            databaseURL: "https://sps003hjr-default-rtdb.firebaseio.com",
-            projectId: "sps003hjr",
-            storageBucket: "sps003hjr.firebasestorage.app",
-            messagingSenderId: "294133615625",
-            appId: "1:294133615625:web:832c4db972dcb1b92cbcd8"
+            apiKey: "AIzaSyAeCrURSs0TBXlYF3TKLi4q98VwrGaKe_Q",
+            authDomain: "spsch-849e5.firebaseapp.com",
+            databaseURL: "https://spsch-849e5-default-rtdb.firebaseio.com",
+            projectId: "spsch-849e5",
+            storageBucket: "spsch-849e5.firebasestorage.app",
+            messagingSenderId: "698967090558",
+            appId: "1:698967090558:web:978781fd27b86c36203f2f"
         };
 
         // Inicializar Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        // Mostrar status
+        // Status
         document.getElementById('status').innerHTML = `
             <p>✅ Firebase inicializado</p>
-            <p>📁 Database URL: ${firebaseConfig.databaseURL}</p>
-            <p>👤 Auth: ${auth.currentUser ? auth.currentUser.email : 'Nenhum usuário logado'}</p>
+            <p>📁 Database: ${firebaseConfig.databaseURL}</p>
+            <p>📦 Project: ${firebaseConfig.projectId}</p>
         `;
 
-        // Observar autenticação
-        auth.onAuthStateChanged(user => {
-            document.getElementById('status').innerHTML = `
-                <p>✅ Firebase inicializado</p>
-                <p>📁 Database URL: ${firebaseConfig.databaseURL}</p>
-                <p>👤 Usuário: ${user ? user.email : 'Nenhum (faça login primeiro)'}</p>
-            `;
-        });
-
-        function log(mensagem, dados) {
-            const resultado = document.getElementById('resultado');
-            resultado.textContent = mensagem + '\n\n' + JSON.stringify(dados, null, 2);
-        }
-
-        // Teste 1: Conexão
-        async function testarConexao() {
+        // Tornar funções globais
+        window.testarConexao = async () => {
             try {
-                const ref = db.ref('.info/connected');
-                const snap = await ref.once('value');
-                const conectado = snap.val();
+                const connectedRef = ref(db, '.info/connected');
+                const snapshot = await get(connectedRef);
+                const conectado = snapshot.val();
                 
                 if (conectado) {
-                    log('✅ CONECTADO ao Firebase com sucesso!', {
-                        status: 'online',
-                        databaseURL: firebaseConfig.databaseURL
-                    });
+                    document.getElementById('resultado').textContent = 
+                        '✅ CONECTADO ao Firebase com sucesso!\n\n' +
+                        JSON.stringify({
+                            status: 'online',
+                            databaseURL: firebaseConfig.databaseURL,
+                            projectId: firebaseConfig.projectId
+                        }, null, 2);
                 } else {
-                    log('❌ NÃO CONECTADO', { status: 'offline' });
+                    document.getElementById('resultado').textContent = 
+                        '❌ NÃO CONECTADO - Offline';
                 }
             } catch (error) {
-                log('❌ ERRO DE CONEXÃO', {
-                    mensagem: error.message,
-                    codigo: error.code
-                });
+                document.getElementById('resultado').textContent = 
+                    '❌ ERRO DE CONEXÃO\n\n' +
+                    JSON.stringify({
+                        mensagem: error.message,
+                        codigo: error.code
+                    }, null, 2);
             }
-        }
+        };
 
-        // Teste 2: Listas
-        async function testarListas() {
+        window.testarListas = async () => {
             try {
-                const snap = await db.ref('listas').once('value');
+                const snap = await get(ref(db, 'listas'));
                 
                 if (snap.exists()) {
-                    log('✅ LISTAS ENCONTRADAS', snap.val());
+                    document.getElementById('resultado').textContent = 
+                        '✅ LISTAS ENCONTRADAS em "listas"\n\n' +
+                        JSON.stringify(snap.val(), null, 2);
                 } else {
-                    log('⚠️ Nó "listas" não encontrado. Tentando "app/listas"...');
-                    
-                    const snap2 = await db.ref('app/listas').once('value');
+                    // Tentar app/listas
+                    const snap2 = await get(ref(db, 'app/listas'));
                     if (snap2.exists()) {
-                        log('✅ LISTAS ENCONTRADAS em app/listas', snap2.val());
+                        document.getElementById('resultado').textContent = 
+                            '✅ LISTAS ENCONTRADAS em "app/listas"\n\n' +
+                            JSON.stringify(snap2.val(), null, 2);
                     } else {
-                        log('❌ LISTAS NÃO ENCONTRADAS', {
-                            tentativas: ['listas', 'app/listas'],
-                            sugestao: 'Verifique a estrutura do banco'
-                        });
+                        document.getElementById('resultado').textContent = 
+                            '❌ LISTAS NÃO ENCONTRADAS\n\n' +
+                            'Caminhos tentados:\n- listas\n- app/listas\n\n' +
+                            'Verifique o Firebase Console';
                     }
                 }
             } catch (error) {
-                log('❌ ERRO AO BUSCAR LISTAS', {
-                    mensagem: error.message,
-                    codigo: error.code
-                });
+                document.getElementById('resultado').textContent = 
+                    '❌ ERRO AO BUSCAR LISTAS\n\n' +
+                    JSON.stringify({
+                        mensagem: error.message,
+                        codigo: error.code
+                    }, null, 2);
             }
-        }
+        };
 
-        // Teste 3: Chamados
-        async function testarChamados() {
+        window.testarChamados = async () => {
             try {
-                const snap = await db.ref('chamados').once('value');
+                const snap = await get(ref(db, 'chamados'));
                 
                 if (snap.exists()) {
                     const dados = snap.val();
-                    const quantidade = Object.keys(dados).length;
-                    log(`✅ ${quantidade} CHAMADOS ENCONTRADOS`, dados);
+                    const qtd = Object.keys(dados).length;
+                    document.getElementById('resultado').textContent = 
+                        `✅ ${qtd} CHAMADOS ENCONTRADOS em "chamados"\n\n` +
+                        JSON.stringify(dados, null, 2);
                 } else {
-                    log('⚠️ Nó "chamados" vazio. Tentando "app/chamados"...');
-                    
-                    const snap2 = await db.ref('app/chamados').once('value');
+                    const snap2 = await get(ref(db, 'app/chamados'));
                     if (snap2.exists()) {
                         const dados = snap2.val();
-                        const quantidade = Object.keys(dados).length;
-                        log(`✅ ${quantidade} CHAMADOS em app/chamados`, dados);
+                        const qtd = Object.keys(dados).length;
+                        document.getElementById('resultado').textContent = 
+                            `✅ ${qtd} CHAMADOS em "app/chamados"\n\n` +
+                            JSON.stringify(dados, null, 2);
                     } else {
-                        log('ℹ️ NENHUM CHAMADO ENCONTRADO', {
-                            status: 'vazio',
-                            sugestao: 'Crie um chamado de teste'
-                        });
+                        document.getElementById('resultado').textContent = 
+                            'ℹ️ NENHUM CHAMADO ENCONTRADO\n\n' +
+                            'Caminhos tentados:\n- chamados\n- app/chamados';
                     }
                 }
             } catch (error) {
-                log('❌ ERRO AO BUSCAR CHAMADOS', {
-                    mensagem: error.message,
-                    codigo: error.code
-                });
+                document.getElementById('resultado').textContent = 
+                    '❌ ERRO\n\n' + JSON.stringify({
+                        mensagem: error.message,
+                        codigo: error.code
+                    }, null, 2);
             }
-        }
+        };
 
-        // Teste 4: Criar
-        async function testarCriar() {
+        window.testarCriar = async () => {
             try {
-                const ref = db.ref('chamados').push();
+                const novoRef = push(ref(db, 'chamados'));
                 
-                const chamadoTeste = {
+                const chamado = {
                     numero: '00001',
                     analista: 'helio',
                     dataHora: new Date().toLocaleString('pt-BR'),
@@ -208,23 +205,26 @@
                     criadoEm: new Date().toISOString()
                 };
 
-                await ref.set(chamadoTeste);
+                await set(novoRef, chamado);
                 
-                log('✅ CHAMADO CRIADO COM SUCESSO!', {
-                    id: ref.key,
-                    dados: chamadoTeste,
-                    caminho: 'chamados/' + ref.key
-                });
+                document.getElementById('resultado').textContent = 
+                    '✅ CHAMADO CRIADO COM SUCESSO!\n\n' +
+                    JSON.stringify({
+                        id: novoRef.key,
+                        caminho: 'chamados/' + novoRef.key,
+                        dados: chamado
+                    }, null, 2);
             } catch (error) {
-                log('❌ ERRO AO CRIAR CHAMADO', {
-                    mensagem: error.message,
-                    codigo: error.code
-                });
+                document.getElementById('resultado').textContent = 
+                    '❌ ERRO AO CRIAR\n\n' + JSON.stringify({
+                        mensagem: error.message,
+                        codigo: error.code
+                    }, null, 2);
             }
-        }
+        };
 
-        // Testar conexão automaticamente
-        setTimeout(testarConexao, 1000);
+        // Teste automático
+        setTimeout(() => window.testarConexao(), 1000);
     </script>
 </body>
 </html>
