@@ -1,0 +1,66 @@
+/* Estilos adicionais para Chamados */
+
+/* Cards de estatísticas */
+.card.bg-primary h2,
+.card.bg-success h2,
+.card.bg-info h2,
+.card.bg-secondary h2 {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.card.bg-warning h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #000;
+}
+
+/* Tabela de chamados */
+.table th {
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.table td {
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+/* Badges de status */
+.badge {
+    font-size: 0.8rem;
+    padding: 0.4em 0.8em;
+}
+
+/* Botões de ação na tabela */
+.btn-group-sm .btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.8rem;
+}
+
+/* Paginação */
+.pagination {
+    margin-bottom: 0;
+}
+
+.pagination .page-link {
+    cursor: pointer;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.9rem;
+}
+
+/* Modal */
+.modal-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .card h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .card h6 {
+        font-size: 0.8rem;
+    }
+}
