@@ -1,7 +1,6 @@
 import { database } from '../firebase/config.js';
 import appContext from '../core/appContext.js';
 
-// Serviço de Chamados
 class ChamadosService {
     constructor() {
         this.listaChamados = [];
@@ -9,13 +8,60 @@ class ChamadosService {
         this.temMaisRegistros = true;
     }
 
-    // Carregar listas (equipamentos e cenários)
+    // Carregar listas com verificação e criação automática
     async carregarListas() {
         try {
             const snapshot = await database.ref('LISTAS').once('value');
-            return snapshot.val() || { equipamentos: [], cenarios: [] };
+            let listas = snapshot.val();
+            
+            // Se não existir, criar automaticamente
+            if (!listas || !listas.equipamentos || !listas.cenarios) {
+                console.log('📋 Listas não encontradas, criando automaticamente...');
+                listas = await this.criarListasPadrao();
+            }
+            
+            return listas;
         } catch (error) {
             console.error('Erro ao carregar listas:', error);
+            // Tentar criar em caso de erro
+            return await this.criarListasPadrao();
+        }
+    }
+
+    // Criar listas padrão
+    async criarListasPadrao() {
+        const listasPadrao = {
+            cenarios: [
+                "Dados",
+                "Voz / Ligações",
+                "Falha no equipamento",
+                "Não localizado no SPSWeb",
+                "HLR não informado",
+                "Franquia de dados",
+                "Ofertas não aparecem",
+                "4G inativo",
+                "Claro Sync",
+                "MasterAccount",
+                "Excedentes de uso",
+                "Outros"
+            ],
+            equipamentos: [
+                "RTC",
+                "HLR",
+                "HLREDA",
+                "HHUA",
+                "HSS",
+                "VPNSIX",
+                "SGV"
+            ]
+        };
+
+        try {
+            await database.ref('LISTAS').set(listasPadrao);
+            console.log('✅ Listas padrão criadas com sucesso!');
+            return listasPadrao;
+        } catch (error) {
+            console.error('❌ Erro ao criar listas padrão:', error);
             return { equipamentos: [], cenarios: [] };
         }
     }
@@ -38,6 +84,7 @@ class ChamadosService {
             // Atualizar contador de linhas
             await this.atualizarContadorLinhas(dados.linha);
             
+            console.log('✅ Chamado criado:', chamadoData.chamado);
             return { success: true, id: newRef.key };
         } catch (error) {
             console.error('Erro ao criar chamado:', error);
@@ -49,6 +96,7 @@ class ChamadosService {
     async atualizarChamado(id, dados) {
         try {
             await database.ref(`CHAMADOS/${id}`).update(dados);
+            console.log('✅ Chamado atualizado:', id);
             return { success: true };
         } catch (error) {
             console.error('Erro ao atualizar chamado:', error);
@@ -63,6 +111,7 @@ class ChamadosService {
                 return { success: false, error: 'Apenas supervisores podem excluir' };
             }
             await database.ref(`CHAMADOS/${id}`).update({ deleted: true });
+            console.log('🗑️ Chamado excluído (soft delete):', id);
             return { success: true };
         } catch (error) {
             console.error('Erro ao excluir chamado:', error);
@@ -73,9 +122,9 @@ class ChamadosService {
     // Pesquisar chamados
     async pesquisarChamados(filtros = {}, limite = 20) {
         try {
-            let query = database.ref('CHAMADOS').orderByChild('createdAt');
+            console.log('🔍 Pesquisando chamados com filtros:', filtros);
             
-            const snapshot = await query.once('value');
+            const snapshot = await database.ref('CHAMADOS').once('value');
             const chamados = [];
             
             snapshot.forEach((child) => {
@@ -96,29 +145,35 @@ class ChamadosService {
             // Paginação
             const resultado = chamados.slice(0, limite);
             this.temMaisRegistros = chamados.length > limite;
+            this.listaChamados = chamados;
             
-            return { success: true, chamados: resultado, total: chamados.length };
+            console.log(`📊 Encontrados ${chamados.length} chamados, mostrando ${resultado.length}`);
+            
+            return { 
+                success: true, 
+                chamados: resultado, 
+                total: chamados.length 
+            };
         } catch (error) {
             console.error('Erro ao pesquisar chamados:', error);
-            return { success: false, error: error.message, chamados: [], total: 0 };
+            return { 
+                success: false, 
+                error: error.message, 
+                chamados: [], 
+                total: 0 
+            };
         }
     }
 
     // Carregar mais registros
     async carregarMais(inicio, limite = 20) {
-        // Implementar lógica de paginação com base no último registro
-        const snapshot = await database.ref('CHAMADOS')
-            .orderByChild('createdAt')
-            .endAt(inicio - 1)
-            .limitToLast(limite)
-            .once('value');
-        
-        const chamados = [];
-        snapshot.forEach((child) => {
-            chamados.push({ id: child.key, ...child.val() });
-        });
-        
-        return chamados.reverse();
+        const inicioIndex = this.listaChamados.findIndex(c => c.id === inicio);
+        if (inicioIndex >= 0) {
+            const proximos = this.listaChamados.slice(inicioIndex + 1, inicioIndex + 1 + limite);
+            this.temMaisRegistros = (inicioIndex + 1 + limite) < this.listaChamados.length;
+            return proximos;
+        }
+        return [];
     }
 
     // Atualizar contador de linhas
@@ -132,6 +187,8 @@ class ChamadosService {
                 count: (dados.count || 0) + 1,
                 lastAt: Date.now()
             });
+            
+            console.log(`📈 Contador atualizado para linha ${linha}: ${dados.count + 1}`);
         } catch (error) {
             console.error('Erro ao atualizar contador:', error);
         }
@@ -139,21 +196,39 @@ class ChamadosService {
 
     // Aplicar filtros
     aplicarFiltros(chamado, filtros) {
+        // Remover filtros vazios
+        Object.keys(filtros).forEach(key => {
+            if (!filtros[key]) delete filtros[key];
+        });
+        
+        // Se não tem filtros, retorna true
+        if (Object.keys(filtros).length === 0) return true;
+        
+        // Filtro por chamado
         if (filtros.chamado && !chamado.chamado?.toLowerCase().includes(filtros.chamado.toLowerCase())) {
             return false;
         }
+        
+        // Filtro por linha
         if (filtros.linha && !chamado.linha?.includes(filtros.linha)) {
             return false;
         }
+        
+        // Filtro por analista
         if (filtros.analista && !chamado.analista?.toLowerCase().includes(filtros.analista.toLowerCase())) {
             return false;
         }
+        
+        // Filtro por data inicial
         if (filtros.dataInicial && chamado.createdAt < filtros.dataInicial) {
             return false;
         }
+        
+        // Filtro por data final
         if (filtros.dataFinal && chamado.createdAt > filtros.dataFinal) {
             return false;
         }
+        
         return true;
     }
 
