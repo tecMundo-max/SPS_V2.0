@@ -1,66 +1,66 @@
-/* Estilos adicionais para Chamados */
-
-/* Cards de estatísticas */
-.card.bg-primary h2,
-.card.bg-success h2,
-.card.bg-info h2,
-.card.bg-secondary h2 {
-    font-size: 2rem;
-    font-weight: bold;
+/* Estilos gerais */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.card.bg-warning h2 {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #000;
+/* Navbar */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
 }
 
-/* Tabela de chamados */
-.table th {
-    white-space: nowrap;
+/* Seções */
+.section-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    overflow: hidden;
+}
+
+.section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    margin: 0;
+}
+
+.section-header h5 {
+    margin: 0;
+    font-weight: 500;
+}
+
+.section-body {
+    padding: 20px;
+}
+
+/* Tabelas */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
     font-size: 0.9rem;
 }
 
-.table td {
+.table tbody td {
     vertical-align: middle;
     font-size: 0.9rem;
 }
 
-/* Badges de status */
-.badge {
-    font-size: 0.8rem;
-    padding: 0.4em 0.8em;
+/* Botões */
+.btn {
+    font-weight: 500;
 }
 
-/* Botões de ação na tabela */
-.btn-group-sm .btn {
-    padding: 0.2rem 0.4rem;
-    font-size: 0.8rem;
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
 }
 
-/* Paginação */
-.pagination {
-    margin-bottom: 0;
-}
-
-.pagination .page-link {
-    cursor: pointer;
-    padding: 0.3rem 0.6rem;
-    font-size: 0.9rem;
-}
-
-/* Modal */
-.modal-header {
-    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .card h2 {
-        font-size: 1.5rem !important;
-    }
-    
-    .card h6 {
-        font-size: 0.8rem;
-    }
-}
+/* Forms */
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+   
