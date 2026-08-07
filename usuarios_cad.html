@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPS V2 - Usuários</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navbar Admin -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-speedometer2"></i> <strong>SPS V2</strong> 
+                <span class="badge bg-danger ms-2">ADMIN</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="chamados.html">
+                            <i class="bi bi-telephone"></i> Chamados
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="chamados_adm.html">
+                            <i class="bi bi-telephone-fill"></i> Chamados Admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="encaminhamentos.html">
+                            <i class="bi bi-envelope"></i> Encaminhamentos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="usuarios.html">
+                            <i class="bi bi-people"></i> Usuários
+                        </a>
+                    </li>
+                </ul>
+                <span class="navbar-text me-3" id="userInfo">
+                    <i class="bi bi-person-badge"></i> Carregando...
+                </span>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> Sair
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-3">
+        
+        <!-- Cabeçalho -->
+        <div class="section-container mb-4">
+            <div class="section-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5><i class="bi bi-people-fill"></i> Gestão de Usuários</h5>
+                    <small class="text-muted">Gerencie os usuários do sistema</small>
+                </div>
+                <button class="btn btn-success" onclick="abrirModalNovoUsuario()">
+                    <i class="bi bi-person-plus"></i> Novo Usuário
+                </button>
+            </div>
+        </div>
+
+        <!-- Cards de Estatísticas -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-people-fill"></i>
+                    <div class="stats-number" id="totalUsuarios">0</div>
+                    <div class="stats-label">Total de Usuários</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-person-check-fill"></i>
+                    <div class="stats-number text-success" id="totalAtivos">0</div>
+                    <div class="stats-label">Usuários Ativos</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-person-x-fill"></i>
+                    <div class="stats-number text-warning" id="totalInativos">0</div>
+                    <div class="stats-label">Usuários Inativos</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-shield-fill-check"></i>
+                    <div class="stats-number text-info" id="totalAdmins">0</div>
+                    <div class="stats-label">Supervisores</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Usuários -->
+        <div class="section-container">
+            <div class="section-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5><i class="bi bi-table"></i> Lista de Usuários</h5>
+                    <small class="text-muted">Todos os usuários cadastrados no sistema</small>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-light me-2" onclick="filtrarUsuarios('todos')" id="btnTodos">
+                        <i class="bi bi-infinity"></i> Todos
+                    </button>
+                    <button class="btn btn-sm btn-outline-success me-2" onclick="filtrarUsuarios('ativos')" id="btnAtivos">
+                        <i class="bi bi-person-check"></i> Ativos
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="filtrarUsuarios('inativos')" id="btnInativos">
+                        <i class="bi bi-person-x"></i> Inativos
+                    </button>
+                </div>
+            </div>
+            <div class="section-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Email</th>
+                                <th>Perfil</th>
+                                <th>Status</th>
+                                <th>Cadastro</th>
+                                <th>Último Acesso</th>
+                                <th style="width: 200px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabela">
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <i class="bi bi-hourglass-split fs-1 d-block mb-3"></i>
+                                    <p class="fs-5">Carregando usuários...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Novo Usuário -->
+    <div class="modal fade" id="modalNovoUsuario" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-plus"></i> Criar Novo Usuário
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNovoUsuario">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-envelope"></i> Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" id="novoEmail" 
+                                   placeholder="usuario@exemplo.com" required>
+                            <small class="text-muted">Este email será usado para login</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-lock"></i> Senha <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" class="form-control" id="novaSenha" 
+                                   placeholder="Mínimo 6 caracteres" required minlength="6">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-person-badge"></i> Perfil
+                            </label>
+                            <select class="form-select" id="novoPerfil">
+                                <option value="ANALISTA">Analista</option>
+                                <option value="SUPERVISOR">Supervisor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="novoAdmin">
+                                <label class="form-check-label" for="novoAdmin">
+                                    <i class="bi bi-shield-check"></i> Administrador
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="novoAtivo" checked>
+                                <label class="form-check-label" for="novoAtivo">
+                                    <i class="bi bi-check-circle"></i> Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="criarUsuario()">
+                        <i class="bi bi-person-plus"></i> Criar Usuário
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Editar Usuário -->
+    <div class="modal fade" id="modalEditarUsuario" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square"></i> Editar Usuário
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditarUsuario">
+                        <input type="hidden" id="editUid">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-person"></i> Nome/Username
+                            </label>
+                            <input type="text" class="form-control" id="editUsername" 
+                                   placeholder="Nome do usuário">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-envelope"></i> Email
+                            </label>
+                            <input type="email" class="form-control" id="editEmail" readonly>
+                            <small class="text-muted">O email não pode ser alterado</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-person-badge"></i> Perfil
+                            </label>
+                            <select class="form-select" id="editPerfil">
+                                <option value="ANALISTA">Analista</option>
+                                <option value="SUPERVISOR">Supervisor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="editAdmin">
+                                <label class="form-check-label" for="editAdmin">
+                                    <i class="bi bi-shield-check"></i> Administrador
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="editAtivo">
+                                <label class="form-check-label" for="editAtivo">
+                                    <i class="bi bi-check-circle"></i> Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="salvarEdicaoUsuario()">
+                        <i class="bi bi-check-circle"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmar Exclusão -->
+    <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle"></i> Confirmar Exclusão
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir este usuário?</p>
+                    <p class="text-danger"><strong>Esta ação não pode ser desfeita!</strong></p>
+                    <input type="hidden" id="excluirUid">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmarExclusao()">
+                        <i class="bi bi-trash"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÃO FIREBASE
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYnvcRKt4qDpk08_4MQVNEOr9Iq95X980",
+            authDomain: "sps003hjr.firebaseapp.com",
+            databaseURL: "https://sps003hjr-default-rtdb.firebaseio.com",
+            projectId: "sps003hjr",
+            storageBucket: "sps003hjr.firebasestorage.app",
+            messagingSenderId: "294133615625",
+            appId: "1:294133615625:web:832c4db972dcb1b92cbcd8"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // ============================================
+        // CARREGAR USUÁRIO LOGADO
+        // ============================================
+        function carregarUsuarioLogado() {
+            const dados = JSON.parse(localStorage.getItem('sps_user') || '{}');
+            if (!dados.uid) {
+                return {
+                    uid: 'dev',
+                    nome: 'Desenvolvedor',
+                    email: 'dev@sps.com',
+                    role: 'SUPERVISOR',
+                    admin: true
+                };
+            }
+            return dados;
+        }
+
+        const USUARIO_ATUAL = carregarUsuarioLogado();
+        let filtroAtual = 'todos';
+        let todosUsuarios = [];
+
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        async function inicializar() {
+            console.log('🚀 Inicializando Gestão de Usuários...');
+            
+            // Verificar se é admin
+            if (!USUARIO_ATUAL.admin) {
+                alert('⛔ Acesso restrito a supervisores!');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('userInfo').innerHTML = 
+                `<i class="bi bi-person-badge"></i> ${USUARIO_ATUAL.nome} (SUPERVISOR)`;
+            
+            await carregarUsuarios();
+            
+            console.log('✅ Página inicializada!');
+        }
+
+        // ============================================
+        // CARREGAR USUÁRIOS
+        // ============================================
+        async function carregarUsuarios() {
+            try {
+                console.log('🔍 Carregando usuários...');
+                const snapshot = await database.ref('USERS').once('value');
+                const usuarios = [];
+                
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    usuarios.push({
+                        uid: child.key,
+                        username: data.username || data.email?.split('@')[0] || 'Sem nome',
+                        email: data.email || '',
+                        role: data.role || 'ANALISTA',
+                        admin: data.admin || false,
+                        ativo: data.ativo || false,
+                        createdAt: data.createdAt || '-',
+                        lastLogin: data.lastLogin || '-'
+                    });
+                });
+                
+                todosUsuarios = usuarios;
+                
+                // Atualizar cards
+                document.getElementById('totalUsuarios').textContent = usuarios.length;
+                document.getElementById('totalAtivos').textContent = usuarios.filter(u => u.ativo).length;
+                document.getElementById('totalInativos').textContent = usuarios.filter(u => !u.ativo).length;
+                document.getElementById('totalAdmins').textContent = usuarios.filter(u => u.admin).length;
+                
+                // Filtrar e exibir
+                filtrarUsuarios(filtroAtual);
+                
+                console.log(`✅ ${usuarios.length} usuários carregados`);
+            } catch (error) {
+                console.error('❌ Erro ao carregar usuários:', error);
+                document.getElementById('corpoTabela').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-danger">
+                            <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+                            <p>Erro ao carregar usuários</p>
+                            <small>${error.message}</small>
+                        </td>
+                    </tr>`;
+            }
+        }
+
+        // ============================================
+        // FILTRAR USUÁRIOS
+        // ============================================
+        window.filtrarUsuarios = function(filtro) {
+            filtroAtual = filtro;
+            
+            // Atualizar botões
+            document.querySelectorAll('#btnTodos, #btnAtivos, #btnInativos').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const btnMap = {
+                'todos': 'btnTodos',
+                'ativos': 'btnAtivos',
+                'inativos': 'btnInativos'
+            };
+            
+            const btnAtivo = document.getElementById(btnMap[filtro]);
+            if (btnAtivo) btnAtivo.classList.add('active');
+            
+            // Filtrar
+            let filtrados = todosUsuarios;
+            
+            if (filtro === 'ativos') {
+                filtrados = todosUsuarios.filter(u => u.ativo);
+            } else if (filtro === 'inativos') {
+                filtrados = todosUsuarios.filter(u => !u.ativo);
+            }
+            
+            exibirUsuarios(filtrados);
+        };
+
+        // ============================================
+        // EXIBIR USUÁRIOS NA TABELA
+        // ============================================
+        function exibirUsuarios(usuarios) {
+            const tbody = document.getElementById('corpoTabela');
+            
+            if (usuarios.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="bi bi-people fs-1 d-block mb-3"></i>
+                            <p class="fs-5">Nenhum usuário encontrado</p>
+                        </td>
+                    </tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = usuarios.map(u => {
+                const statusClass = u.ativo ? 'success' : 'secondary';
+                const statusText = u.ativo ? 'Ativo' : 'Inativo';
+                const statusIcon = u.ativo ? 'bi-check-circle-fill' : 'bi-x-circle-fill';
+                
+                const perfilClass = u.admin ? 'danger' : 'info';
+                const perfilText = u.role || 'ANALISTA';
+                
+                return `
+                    <tr class="${!u.ativo ? 'table-secondary opacity-75' : ''}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person-circle fs-4 me-2 ${u.ativo ? 'text-success' : 'text-muted'}"></i>
+                                <div>
+                                    <strong>${u.username}</strong>
+                                    ${u.admin ? '<span class="badge bg-danger ms-2">Admin</span>' : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td><small>${u.email}</small></td>
+                        <td><span class="badge bg-${perfilClass}">${perfilText}</span></td>
+                        <td>
+                            <span class="badge bg-${statusClass}">
+                                <i class="bi ${statusIcon}"></i> ${statusText}
+                            </span>
+                        </td>
+                        <td><small>${u.createdAt}</small></td>
+                        <td><small>${u.lastLogin || 'Nunca'}</small></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                ${u.ativo ? 
+                                    `<button class="btn btn-warning" onclick="toggleStatus('${u.uid}', false)" title="Inativar">
+                                        <i class="bi bi-person-x"></i>
+                                    </button>` :
+                                    `<button class="btn btn-success" onclick="toggleStatus('${u.uid}', true)" title="Ativar">
+                                        <i class="bi bi-person-check"></i>
+                                    </button>`
+                                }
+                                <button class="btn btn-info" onclick="abrirModalEdicao('${u.uid}')" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                ${u.uid !== USUARIO_ATUAL.uid ? `
+                                    <button class="btn btn-danger" onclick="abrirModalExclusao('${u.uid}')" title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // TOGGLE ATIVAR/INATIVAR
+        // ============================================
+        window.toggleStatus = async function(uid, ativar) {
+            const acao = ativar ? 'ativar' : 'inativar';
+            
+            if (confirm(`Deseja ${acao} este usuário?`)) {
+                try {
+                    await database.ref(`USERS/${uid}`).update({ ativo: ativar });
+                    console.log(`✅ Usuário ${uid} ${ativar ? 'ativado' : 'inativado'}`);
+                    alert(`✅ Usuário ${ativar ? 'ativado' : 'inativado'} com sucesso!`);
+                    await carregarUsuarios();
+                } catch (error) {
+                    console.error('❌ Erro:', error);
+                    alert('❌ Erro: ' + error.message);
+                }
+            }
+        };
+
+        // ============================================
+        // CRIAR NOVO USUÁRIO
+        // ============================================
+        window.abrirModalNovoUsuario = function() {
+            document.getElementById('formNovoUsuario').reset();
+            document.getElementById('novoAtivo').checked = true;
+            new bootstrap.Modal(document.getElementById('modalNovoUsuario')).show();
+        };
+
+        window.criarUsuario = async function() {
+            const email = document.getElementById('novoEmail').value.trim();
+            const senha = document.getElementById('novaSenha').value;
+            const perfil = document.getElementById('novoPerfil').value;
+            const admin = document.getElementById('novoAdmin').checked;
+            const ativo = document.getElementById('novoAtivo').checked;
+            
+            if (!email || !senha) {
+                alert('❌ Preencha todos os campos obrigatórios!');
+                return;
+            }
+            
+            if (senha.length < 6) {
+                alert('❌ A senha deve ter no mínimo 6 caracteres!');
+                return;
+            }
+            
+            try {
+                // Criar no Authentication
+                const userCredential = await auth.createUserWithEmailAndPassword(email, senha);
+                const user = userCredential.user;
+                
+                // Criar perfil no Database
+                await database.ref(`USERS/${user.uid}`).set({
+                    username: email.split('@')[0],
+                    email: email,
+                    admin: admin,
+                    role: perfil,
+                    ativo: ativo,
+                    createdAt: new Date().toLocaleDateString('pt-BR'),
+                    criadoPor: USUARIO_ATUAL.nome
+                });
+                
+                console.log('✅ Usuário criado:', email);
+                alert('✅ Usuário criado com sucesso!');
+                
+                bootstrap.Modal.getInstance(document.getElementById('modalNovoUsuario')).hide();
+                
+                // Deslogar o novo usuário e voltar para o admin
+                await auth.signOut();
+                
+                // Relogar como admin (se tiver senha salva) ou pedir para logar novamente
+                alert('⚠️ Por segurança, faça login novamente com sua conta de supervisor.');
+                localStorage.removeItem('sps_user');
+                window.location.href = 'login.html';
+                
+            } catch (error) {
+                console.error('❌ Erro ao criar usuário:', error);
+                
+                let mensagem = 'Erro ao criar usuário';
+                if (error.code === 'auth/email-already-in-use') {
+                    mensagem = 'Este email já está cadastrado';
+                } else if (error.code === 'auth/invalid-email') {
+                    mensagem = 'Email inválido';
+                } else if (error.code === 'auth/weak-password') {
+                    mensagem = 'Senha muito fraca';
+                }
+                
+                alert('❌ ' + mensagem);
+            }
+        };
+
+        // ============================================
+        // EDITAR USUÁRIO
+        // ============================================
+        window.abrirModalEdicao = async function(uid) {
+            try {
+                const snapshot = await database.ref(`USERS/${uid}`).once('value');
+                const user = snapshot.val();
+                
+                if (user) {
+                    document.getElementById('editUid').value = uid;
+                    document.getElementById('editUsername').value = user.username || '';
+                    document.getElementById('editEmail').value = user.email || '';
+                    document.getElementById('editPerfil').value = user.role || 'ANALISTA';
+                    document.getElementById('editAdmin').checked = user.admin || false;
+                    document.getElementById('editAtivo').checked = user.ativo || false;
+                    
+                    new bootstrap.Modal(document.getElementById('modalEditarUsuario')).show();
+                }
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                alert('Erro ao carregar dados do usuário');
+            }
+        };
+
+        window.salvarEdicaoUsuario = async function() {
+            const uid = document.getElementById('editUid').value;
+            const dados = {
+                username: document.getElementById('editUsername').value.trim(),
+                role: document.getElementById('editPerfil').value,
+                admin: document.getElementById('editAdmin').checked,
+                ativo: document.getElementById('editAtivo').checked,
+                atualizadoPor: USUARIO_ATUAL.nome,
+                updatedAt: new Date().toLocaleDateString('pt-BR')
+            };
+            
+            try {
+                await database.ref(`USERS/${uid}`).update(dados);
+                console.log('✅ Usuário atualizado:', uid);
+                alert('✅ Usuário atualizado com sucesso!');
+                
+                bootstrap.Modal.getInstance(document.getElementById('modalEditarUsuario')).hide();
+                await carregarUsuarios();
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                alert('❌ Erro: ' + error.message);
+            }
+        };
+
+        // ============================================
+        // EXCLUIR USUÁRIO
+        // ============================================
+        window.abrirModalExclusao = function(uid) {
+            document.getElementById('excluirUid').value = uid;
+            new bootstrap.Modal(document.getElementById('modalConfirmarExclusao')).show();
+        };
+
+        window.confirmarExclusao = async function() {
+            const uid = document.getElementById('excluirUid').value;
+            
+            try {
+                // Excluir do Database
+                await database.ref(`USERS/${uid}`).remove();
+                
+                // Nota: Não excluímos do Authentication pois requer admin SDK
+                console.log('✅ Usuário excluído do Database:', uid);
+                alert('✅ Usuário excluído com sucesso!\n\nNota: O email continua registrado no Authentication.');
+                
+                bootstrap.Modal.getInstance(document.getElementById('modalConfirmarExclusao')).hide();
+                await carregarUsuarios();
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                alert('❌ Erro ao excluir: ' + error.message);
+            }
+        };
+
+        window.logout = function() {
+            localStorage.removeItem('sps_user');
+            window.location.href = 'login.html';
+        };
+
+        // Iniciar
+        window.addEventListener('DOMContentLoaded', inicializar);
+    </script>
+</body>
+</html>
