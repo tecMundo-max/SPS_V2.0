@@ -1,108 +1,402 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-
-    <title>SPS v2 - Login</title>
-
-    <link rel="icon" href="assets/logo/favicon.ico">
-
-    <link rel="stylesheet" href="css/reset.css">
-
-    <link rel="stylesheet" href="css/variables.css">
-
-    <link rel="stylesheet" href="css/layout.css">
-
-    <link rel="stylesheet" href="css/components.css">
-
-    <link rel="stylesheet" href="css/forms.css">
-
+    <title>SPS V2 - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .login-logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-logo i {
+            font-size: 4rem;
+            color: var(--claro-vermelho);
+            margin-bottom: 15px;
+        }
+        
+        .login-logo h2 {
+            color: var(--text-primary);
+            font-weight: bold;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .login-logo h2 span {
+            color: var(--claro-vermelho);
+        }
+        
+        .login-logo p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        
+        .form-control-login {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control-login:focus {
+            border-color: var(--claro-vermelho);
+            box-shadow: 0 0 0 0.2rem rgba(218, 41, 28, 0.25);
+            outline: none;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, var(--claro-vermelho) 0%, var(--claro-vermelho-escuro) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(218, 41, 28, 0.4);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+            color: var(--text-muted);
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .divider span {
+            padding: 0 15px;
+            font-size: 0.9rem;
+        }
+        
+        .input-group-text {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+    </style>
 </head>
-
 <body>
-
-    <main class="login-container">
-
-        <section class="login-box">
-
-            <div class="login-header">
-
-                <img src="assets/logo/logo.png" alt="SPS v2" class="logo">
-
-                <h1>SPS v2</h1>
-
-                <p>Sistema de Controle de Chamados</p>
-
+    <div class="login-card">
+        <div class="login-logo">
+            <i class="bi bi-speedometer2"></i>
+            <h2>SPS <span>V2</span></h2>
+            <p>Sistema de Prestação de Serviços</p>
+        </div>
+        
+        <!-- Formulário de Login -->
+        <form id="loginForm">
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-envelope"></i> Email
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-at"></i>
+                    </span>
+                    <input type="email" class="form-control-login" id="email" 
+                           placeholder="seu@email.com" required>
+                </div>
             </div>
-
-            <form id="loginForm" autocomplete="off" novalidate>
-
-                <div class="form-group">
-
-                    <label for="email">
-
-                        E-mail
-
-                    </label>
-
-                    <input id="email" name="email" type="email" placeholder="usuario@empresa.com" required>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label for="password">
-
-                        Senha
-
-                    </label>
-
-                    <input id="password" name="password" type="password" placeholder="********" required>
-
-                </div>
-
-                <div class="form-options">
-
-                    <button type="button" id="btnForgotPassword" class="link-button">
-
-                        Esqueci minha senha
-
+            
+            <div class="mb-4">
+                <label class="form-label">
+                    <i class="bi bi-lock"></i> Senha
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-key"></i>
+                    </span>
+                    <input type="password" class="form-control-login" id="senha" 
+                           placeholder="••••••••" required>
+                    <button class="btn input-group-text" type="button" onclick="toggleSenha()">
+                        <i class="bi bi-eye" id="iconeOlho"></i>
                     </button>
-
                 </div>
-
-                <button type="submit" id="btnLogin" class="btn btn-primary">
-
-                    Entrar
-
-                </button>
-
-            </form>
-
-            <div id="loginMessage" class="login-message">
-
             </div>
-
-            <div id="loading" class="loading hidden">
-
-                Autenticando...
-
+            
+            <button type="submit" class="btn-login mb-3">
+                <i class="bi bi-box-arrow-in-right"></i> Entrar no Sistema
+            </button>
+        </form>
+        
+        <div class="divider">
+            <span>ou</span>
+        </div>
+        
+        <!-- Formulário de Registro -->
+        <form id="registroForm" style="display: none;">
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-envelope"></i> Email
+                </label>
+                <input type="email" class="form-control-login" id="regEmail" 
+                       placeholder="seu@email.com" required>
             </div>
+            
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-lock"></i> Senha
+                </label>
+                <input type="password" class="form-control-login" id="regSenha" 
+                       placeholder="Mínimo 6 caracteres" required minlength="6">
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-lock-fill"></i> Confirmar Senha
+                </label>
+                <input type="password" class="form-control-login" id="regConfirmarSenha" 
+                       placeholder="Repita a senha" required minlength="6">
+            </div>
+            
+            <button type="submit" class="btn-login mb-3">
+                <i class="bi bi-person-plus"></i> Criar Conta
+            </button>
+        </form>
+        
+        <div class="text-center">
+            <button class="btn btn-link text-muted" onclick="toggleRegistro()">
+                <span id="textoAlternar">
+                    <i class="bi bi-person-plus"></i> Não tem conta? Cadastre-se
+                </span>
+            </button>
+        </div>
+        
+        <!-- Mensagem de Status -->
+        <div id="mensagemStatus" class="mt-3" style="display: none;"></div>
+    </div>
 
-        </section>
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    </main>
+    <script>
+        // Configuração Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYnvcRKt4qDpk08_4MQVNEOr9Iq95X980",
+            authDomain: "sps003hjr.firebaseapp.com",
+            databaseURL: "https://sps003hjr-default-rtdb.firebaseio.com",
+            projectId: "sps003hjr",
+            storageBucket: "sps003hjr.firebasestorage.app",
+            messagingSenderId: "294133615625",
+            appId: "1:294133615625:web:832c4db972dcb1b92cbcd8"
+        };
 
-    <script type="module" src="js/bootstrap.js">
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
 
+        let modoRegistro = false;
+
+        // Alternar entre Login e Registro
+        window.toggleRegistro = function() {
+            modoRegistro = !modoRegistro;
+            
+            if (modoRegistro) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registroForm').style.display = 'block';
+                document.getElementById('textoAlternar').innerHTML = 
+                    '<i class="bi bi-box-arrow-in-right"></i> Já tem conta? Faça login';
+            } else {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registroForm').style.display = 'none';
+                document.getElementById('textoAlternar').innerHTML = 
+                    '<i class="bi bi-person-plus"></i> Não tem conta? Cadastre-se';
+            }
+        };
+
+        // Toggle senha
+        window.toggleSenha = function() {
+            const senhaInput = document.getElementById('senha');
+            const icone = document.getElementById('iconeOlho');
+            
+            if (senhaInput.type === 'password') {
+                senhaInput.type = 'text';
+                icone.className = 'bi bi-eye-slash';
+            } else {
+                senhaInput.type = 'password';
+                icone.className = 'bi bi-eye';
+            }
+        };
+
+        // Mostrar mensagem
+        function mostrarMensagem(texto, tipo) {
+            const div = document.getElementById('mensagemStatus');
+            div.style.display = 'block';
+            div.className = `alert alert-${tipo} mt-3`;
+            div.textContent = texto;
+        }
+
+        // LOGIN
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            
+            try {
+                mostrarMensagem('⏳ Autenticando...', 'info');
+                
+                const userCredential = await auth.signInWithEmailAndPassword(email, senha);
+                const user = userCredential.user;
+                
+                console.log('✅ Login realizado:', user.email);
+                
+                // Buscar perfil do usuário
+                const snapshot = await database.ref(`USERS/${user.uid}`).once('value');
+                const perfil = snapshot.val();
+                
+                // Salvar dados da sessão
+                const dadosSessao = {
+                    uid: user.uid,
+                    email: user.email,
+                    nome: perfil?.username || user.email.split('@')[0],
+                    role: perfil?.role || 'ANALISTA',
+                    admin: perfil?.admin || false,
+                    ativo: perfil?.ativo || false
+                };
+                
+                localStorage.setItem('sps_user', JSON.stringify(dadosSessao));
+                
+                // Redirecionar baseado no perfil
+                if (dadosSessao.admin) {
+                    window.location.href = 'index.html';
+                } else {
+                    window.location.href = 'chamados.html';
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro no login:', error);
+                
+                let mensagem = 'Erro ao fazer login';
+                if (error.code === 'auth/user-not-found') {
+                    mensagem = 'Email não cadastrado';
+                } else if (error.code === 'auth/wrong-password') {
+                    mensagem = 'Senha incorreta';
+                } else if (error.code === 'auth/invalid-email') {
+                    mensagem = 'Email inválido';
+                }
+                
+                mostrarMensagem('❌ ' + mensagem, 'danger');
+            }
+        });
+
+        // REGISTRO
+        document.getElementById('registroForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('regEmail').value.trim();
+            const senha = document.getElementById('regSenha').value;
+            const confirmarSenha = document.getElementById('regConfirmarSenha').value;
+            
+            if (senha !== confirmarSenha) {
+                mostrarMensagem('❌ As senhas não coincidem', 'danger');
+                return;
+            }
+            
+            if (senha.length < 6) {
+                mostrarMensagem('❌ A senha deve ter no mínimo 6 caracteres', 'danger');
+                return;
+            }
+            
+            try {
+                mostrarMensagem('⏳ Criando conta...', 'info');
+                
+                const userCredential = await auth.createUserWithEmailAndPassword(email, senha);
+                const user = userCredential.user;
+                
+                // Criar perfil no banco
+                await database.ref(`USERS/${user.uid}`).set({
+                    username: email,
+                    email: email,
+                    admin: false,
+                    role: 'ANALISTA',
+                    ativo: false,
+                    createdAt: new Date().toLocaleDateString('pt-BR')
+                });
+                
+                console.log('✅ Conta criada:', user.email);
+                mostrarMensagem('✅ Conta criada com sucesso! Aguarde ativação pelo supervisor.', 'success');
+                
+                // Voltar para login após 2 segundos
+                setTimeout(() => {
+                    toggleRegistro();
+                    document.getElementById('email').value = email;
+                    mostrarMensagem('', '');
+                }, 2000);
+                
+            } catch (error) {
+                console.error('❌ Erro no registro:', error);
+                
+                let mensagem = 'Erro ao criar conta';
+                if (error.code === 'auth/email-already-in-use') {
+                    mensagem = 'Este email já está cadastrado';
+                } else if (error.code === 'auth/invalid-email') {
+                    mensagem = 'Email inválido';
+                } else if (error.code === 'auth/weak-password') {
+                    mensagem = 'Senha muito fraca';
+                }
+                
+                mostrarMensagem('❌ ' + mensagem, 'danger');
+            }
+        });
+
+        // Verificar se já está logado
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('👤 Usuário já logado:', user.email);
+                // Se já estiver logado, redirecionar
+                const dadosSessao = JSON.parse(localStorage.getItem('sps_user') || '{}');
+                if (dadosSessao.admin) {
+                    window.location.href = 'index.html';
+                } else {
+                    window.location.href = 'chamados.html';
+                }
+            }
+        });
     </script>
-
 </body>
-
 </html>
