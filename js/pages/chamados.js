@@ -1,6 +1,7 @@
 // js/pages/chamados.js
 import { chamadosService } from '../services/chamadosService.js';
 import { auth } from '../firebase/config.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 let estadoPagina = {
     chamados: [],
@@ -12,23 +13,28 @@ let estadoPagina = {
     chamadoEditando: null
 };
 
-export async function initChamados() {
-    try {
-        const usuario = auth.currentUser;
-        if (!usuario) { window.location.href = 'login.html'; return; }
+export function initChamados() {
+    // Aguardar o Firebase verificar autenticação
+    onAuthStateChanged(auth, async (usuario) => {
+        if (!usuario) {
+            window.location.href = 'login.html';
+            return;
+        }
 
-        atualizarInfoUsuario(usuario);
-        await carregarListas();
-        configurarCamposAutomaticos(usuario);
-        await gerarProximoNumero();
-        await carregarDados();
-        configurarEventListeners();
-        configurarLogout();
-        configurarMascaraMSISDN();
-        console.log('✅ Módulo de Chamados inicializado');
-    } catch (error) {
-        console.error('Erro:', error);
-    }
+        try {
+            atualizarInfoUsuario(usuario);
+            await carregarListas();
+            configurarCamposAutomaticos(usuario);
+            await gerarProximoNumero();
+            await carregarDados();
+            configurarEventListeners();
+            configurarLogout();
+            configurarMascaraMSISDN();
+            console.log('✅ Módulo de Chamados inicializado');
+        } catch (error) {
+            console.error('Erro:', error);
+        }
+    });
 }
 
 function atualizarInfoUsuario(usuario) {
