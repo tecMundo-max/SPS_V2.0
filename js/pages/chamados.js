@@ -2,21 +2,10 @@
 import { chamadosService } from '../services/chamadosService.js';
 import { auth } from '../firebase/config.js';
 
-// Estado da página
 let estadoPagina = {
     chamados: [],
-    listas: {
-        equipamentos: [],
-        cenarios: []
-    },
-    filtros: {
-        dataInicial: '',
-        dataFinal: '',
-        status: 'TODOS',
-        numero: '',
-        msisdn: '',
-        cliente: ''
-    },
+    listas: { equipamentos: [], cenarios: [] },
+    filtros: { dataInicial: '', dataFinal: '', status: 'TODOS', numero: '', msisdn: '', cliente: '' },
     paginaAtual: 1,
     itensPorPagina: 10,
     editando: false,
@@ -26,10 +15,7 @@ let estadoPagina = {
 export async function initChamados() {
     try {
         const usuario = auth.currentUser;
-        if (!usuario) {
-            window.location.href = 'login.html';
-            return;
-        }
+        if (!usuario) { window.location.href = 'login.html'; return; }
 
         atualizarInfoUsuario(usuario);
         await carregarListas();
@@ -39,10 +25,9 @@ export async function initChamados() {
         configurarEventListeners();
         configurarLogout();
         configurarMascaraMSISDN();
-
         console.log('✅ Módulo de Chamados inicializado');
     } catch (error) {
-        console.error('Erro ao inicializar chamados:', error);
+        console.error('Erro:', error);
     }
 }
 
@@ -54,65 +39,31 @@ function atualizarInfoUsuario(usuario) {
 async function carregarListas() {
     try {
         estadoPagina.listas = await chamadosService.buscarListas();
-        preencherDropdowns();
-    } catch (error) {
-        console.error('Erro ao carregar listas:', error);
-    }
-}
-
-function preencherDropdowns() {
-    const selectEquip = document.getElementById('equipamento');
-    const selectCen = document.getElementById('cenario');
-
-    if (selectEquip) {
-        selectEquip.innerHTML = '<option value="">Selecione...</option>';
-        estadoPagina.listas.equipamentos.forEach(e => {
-            selectEquip.innerHTML += `<option value="${e}">${e}</option>`;
-        });
-    }
-
-    if (selectCen) {
-        selectCen.innerHTML = '<option value="">Selecione...</option>';
-        estadoPagina.listas.cenarios.forEach(c => {
-            selectCen.innerHTML += `<option value="${c}">${c}</option>`;
-        });
-    }
+        const se = document.getElementById('equipamento');
+        const sc = document.getElementById('cenario');
+        if (se) { se.innerHTML = '<option value="">Selecione...</option>' + estadoPagina.listas.equipamentos.map(e => `<option value="${e}">${e}</option>`).join(''); }
+        if (sc) { sc.innerHTML = '<option value="">Selecione...</option>' + estadoPagina.listas.cenarios.map(c => `<option value="${c}">${c}</option>`).join(''); }
+    } catch (e) { console.error('Erro listas:', e); }
 }
 
 function configurarCamposAutomaticos(usuario) {
-    const campoAnalista = document.getElementById('analista');
-    if (campoAnalista) {
-        campoAnalista.value = usuario.email?.split('@')[0] || 'helio';
-    }
-
-    const campoDataHora = document.getElementById('dataHora');
-    if (campoDataHora) {
-        campoDataHora.value = formatarDataHora(new Date());
-    }
+    const a = document.getElementById('analista');
+    const d = document.getElementById('dataHora');
+    if (a) a.value = usuario.email?.split('@')[0] || 'helio';
+    if (d) { const now = new Date(); d.value = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`; }
 }
 
 async function gerarProximoNumero() {
     try {
-        const numero = await chamadosService.gerarNumeroChamado();
-        const campoChamado = document.getElementById('chamado');
-        if (campoChamado) campoChamado.value = numero;
-    } catch (error) {
-        console.error('Erro ao gerar número:', error);
-    }
+        const n = await chamadosService.gerarNumeroChamado();
+        const c = document.getElementById('chamado');
+        if (c) c.value = n;
+    } catch (e) { console.error('Erro número:', e); }
 }
 
 function configurarMascaraMSISDN() {
-    const campo = document.getElementById('msisdn');
-    if (campo) {
-        campo.addEventListener('input', (e) => {
-            let valor = e.target.value.replace(/\D/g, '');
-            if (valor.length <= 11) {
-                if (valor.length > 2) valor = `(${valor.substring(0, 2)}) ${valor.substring(2)}`;
-                if (valor.length > 10) valor = `${valor.substring(0, 10)}-${valor.substring(10)}`;
-                e.target.value = valor;
-            }
-        });
-    }
+    const c = document.getElementById('msisdn');
+    if (c) c.addEventListener('input', e => { let v = e.target.value.replace(/\D/g,''); if(v.length<=11){ if(v.length>2) v=`(${v.substring(0,2)}) ${v.substring(2)}`; if(v.length>10) v=`${v.substring(0,10)}-${v.substring(10)}`; e.target.value=v; } });
 }
 
 async function carregarDados() {
@@ -122,94 +73,52 @@ async function carregarDados() {
         estadoPagina.paginaAtual = 1;
         renderizarTabela();
         renderizarPaginacao();
-        atualizarInfoRegistros();
-    } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-    } finally {
-        mostrarLoading(false);
-    }
-}
-
-function atualizarInfoRegistros() {
-    const el = document.getElementById('infoRegistros');
-    if (el) el.textContent = `Total de registros: ${estadoPagina.chamados.length}`;
+        document.getElementById('infoRegistros').textContent = `Total: ${estadoPagina.chamados.length}`;
+    } catch (e) { console.error('Erro dados:', e); }
+    finally { mostrarLoading(false); }
 }
 
 function renderizarTabela() {
     const tbody = document.getElementById('tabelaChamados');
     if (!tbody) return;
-
-    const inicio = (estadoPagina.paginaAtual - 1) * estadoPagina.itensPorPagina;
-    const fim = inicio + estadoPagina.itensPorPagina;
-    const paginados = estadoPagina.chamados.slice(inicio, fim);
-
-    if (paginados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-muted">
-            <i class="bi bi-inbox display-4 d-block mb-3"></i>Nenhum chamado encontrado</td></tr>`;
-        return;
-    }
-
-    tbody.innerHTML = paginados.map(c => `
-        <tr>
-            <td><span class="badge bg-secondary">#${c.numero || '-'}</span></td>
-            <td>${c.dataHora || '-'}</td>
-            <td>${c.analista || '-'}</td>
-            <td>${c.msisdn || '-'}</td>
-            <td>${c.equipamento || '-'}</td>
-            <td>${c.cenario || '-'}</td>
-            <td>${c.email || '-'}</td>
-            <td><span class="badge ${getStatusClass(c.status)}">${c.status || 'ABERTO'}</span></td>
-            <td>${c.observacoes || '-'}</td>
-            <td>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary" onclick="window.editarChamado('${c.id}')" title="Editar">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    const ini = (estadoPagina.paginaAtual-1)*estadoPagina.itensPorPagina;
+    const pag = estadoPagina.chamados.slice(ini, ini+estadoPagina.itensPorPagina);
+    if (!pag.length) { tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">Nenhum chamado</td></tr>'; return; }
+    tbody.innerHTML = pag.map(c => `<tr>
+        <td><span class="badge bg-secondary">#${c.numero||'-'}</span></td>
+        <td>${c.dataHora||'-'}</td><td>${c.analista||'-'}</td><td>${c.msisdn||'-'}</td>
+        <td>${c.equipamento||'-'}</td><td>${c.cenario||'-'}</td><td>${c.email||'-'}</td>
+        <td><span class="badge ${c.status==='ABERTO'?'bg-danger':c.status==='EXECUCAO'?'bg-warning text-dark':c.status==='AGUARDANDO'?'bg-info':'bg-success'}">${c.status||'ABERTO'}</span></td>
+        <td>${c.observacoes||'-'}</td>
+        <td><button class="btn btn-outline-primary btn-sm" onclick="window.editarChamado('${c.id}')"><i class="bi bi-pencil"></i></button></td>
+    </tr>`).join('');
 }
 
 function renderizarPaginacao() {
-    const container = document.getElementById('paginacaoChamados');
-    if (!container) return;
-
-    const totalPaginas = Math.ceil(estadoPagina.chamados.length / estadoPagina.itensPorPagina);
-    if (totalPaginas <= 1) { container.innerHTML = ''; return; }
-
-    let html = '<ul class="pagination pagination-sm mb-0">';
-    html += `<li class="page-item ${estadoPagina.paginaAtual === 1 ? 'disabled' : ''}">
-        <button class="page-link" onclick="window.mudarPagina(${estadoPagina.paginaAtual - 1})">◄</button></li>`;
-    
-    for (let i = 1; i <= totalPaginas; i++) {
-        html += `<li class="page-item ${i === estadoPagina.paginaAtual ? 'active' : ''}">
-            <button class="page-link" onclick="window.mudarPagina(${i})">${i}</button></li>`;
-    }
-    
-    html += `<li class="page-item ${estadoPagina.paginaAtual === totalPaginas ? 'disabled' : ''}">
-        <button class="page-link" onclick="window.mudarPagina(${estadoPagina.paginaAtual + 1})">►</button></li>`;
-    html += '</ul>';
-    container.innerHTML = html;
+    const c = document.getElementById('paginacaoChamados');
+    if (!c) return;
+    const t = Math.ceil(estadoPagina.chamados.length/estadoPagina.itensPorPagina);
+    if (t<=1){ c.innerHTML=''; return; }
+    let h = '<ul class="pagination pagination-sm mb-0">';
+    h += `<li class="page-item ${estadoPagina.paginaAtual===1?'disabled':''}"><button class="page-link" onclick="window.mudarPagina(${estadoPagina.paginaAtual-1})">◄</button></li>`;
+    for(let i=1;i<=t;i++) h += `<li class="page-item ${i===estadoPagina.paginaAtual?'active':''}"><button class="page-link" onclick="window.mudarPagina(${i})">${i}</button></li>`;
+    h += `<li class="page-item ${estadoPagina.paginaAtual===t?'disabled':''}"><button class="page-link" onclick="window.mudarPagina(${estadoPagina.paginaAtual+1})">►</button></li></ul>`;
+    c.innerHTML = h;
 }
 
 function configurarEventListeners() {
     document.getElementById('btnSalvar')?.addEventListener('click', salvarChamado);
     document.getElementById('btnCancelar')?.addEventListener('click', cancelarEdicao);
-    document.getElementById('btnBuscar')?.addEventListener('click', aplicarFiltros);
+    document.getElementById('btnBuscar')?.addEventListener('click', ()=>{ aplicarFiltros(); });
     document.getElementById('btnLimparFiltros')?.addEventListener('click', limparFiltros);
-    
-    document.getElementById('buscaNumero')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') aplicarFiltros();
-    });
-
+    document.getElementById('buscaNumero')?.addEventListener('keypress', e=>{ if(e.key==='Enter') aplicarFiltros(); });
     window.editarChamado = editarChamado;
     window.mudarPagina = mudarPagina;
 }
 
 async function salvarChamado() {
     try {
-        const dados = {
+        const d = {
             analista: document.getElementById('analista').value,
             dataHora: document.getElementById('dataHora').value,
             msisdn: document.getElementById('msisdn').value,
@@ -220,22 +129,17 @@ async function salvarChamado() {
             flag: document.getElementById('flag').checked,
             tituloEmail: document.getElementById('tituloEmail').value
         };
-
-        if (estadoPagina.editando && estadoPagina.chamadoEditando) {
-            await chamadosService.atualizarChamado(estadoPagina.chamadoEditando, dados);
-            alert('✅ Chamado atualizado!');
+        if (estadoPagina.editando) {
+            await chamadosService.atualizarChamado(estadoPagina.chamadoEditando, d);
+            alert('✅ Atualizado!');
         } else {
-            await chamadosService.criarChamado(dados);
-            alert('✅ Chamado criado!');
+            await chamadosService.criarChamado(d);
+            alert('✅ Criado!');
             await gerarProximoNumero();
         }
-
         cancelarEdicao();
         await carregarDados();
-    } catch (error) {
-        console.error('Erro ao salvar:', error);
-        alert('❌ Erro ao salvar chamado');
-    }
+    } catch (e) { console.error('Erro:', e); alert('❌ Erro'); }
 }
 
 function cancelarEdicao() {
@@ -248,25 +152,21 @@ function cancelarEdicao() {
 
 async function editarChamado(id) {
     try {
-        const chamado = await chamadosService.buscarChamado(id);
+        const c = await chamadosService.buscarChamado(id);
         estadoPagina.editando = true;
         estadoPagina.chamadoEditando = id;
-        
-        document.getElementById('analista').value = chamado.analista || '';
-        document.getElementById('dataHora').value = chamado.dataHora || '';
-        document.getElementById('chamado').value = chamado.chamado || chamado.numero || '';
-        document.getElementById('msisdn').value = chamado.msisdn || '';
-        document.getElementById('equipamento').value = chamado.equipamento || '';
-        document.getElementById('cenario').value = chamado.cenario || '';
-        document.getElementById('observacoes').value = chamado.observacoes || '';
-        document.getElementById('email').value = chamado.email || '';
-        document.getElementById('flag').checked = chamado.flag || false;
-        document.getElementById('tituloEmail').value = chamado.tituloEmail || '';
-        
+        document.getElementById('analista').value = c.analista || '';
+        document.getElementById('dataHora').value = c.dataHora || '';
+        document.getElementById('chamado').value = c.numero || '';
+        document.getElementById('msisdn').value = c.msisdn || '';
+        document.getElementById('equipamento').value = c.equipamento || '';
+        document.getElementById('cenario').value = c.cenario || '';
+        document.getElementById('observacoes').value = c.observacoes || '';
+        document.getElementById('email').value = c.email || '';
+        document.getElementById('flag').checked = c.flag || false;
+        document.getElementById('tituloEmail').value = c.tituloEmail || '';
         document.getElementById('formChamado').scrollIntoView({ behavior: 'smooth' });
-    } catch (error) {
-        console.error('Erro ao editar:', error);
-    }
+    } catch (e) { console.error('Erro:', e); }
 }
 
 function aplicarFiltros() {
@@ -280,55 +180,27 @@ function aplicarFiltros() {
 }
 
 function limparFiltros() {
-    ['buscaNumero', 'buscaMSISDN', 'buscaCliente'].forEach(id => {
-        const el = document.getElementById(id); if (el) el.value = '';
-    });
-    const statusEl = document.getElementById('filtroStatus'); if (statusEl) statusEl.value = 'TODOS';
-    ['dataInicial', 'dataFinal'].forEach(id => {
-        const el = document.getElementById(id); if (el) el.value = '';
-    });
+    ['buscaNumero','buscaMSISDN','buscaCliente','dataInicial','dataFinal'].forEach(id => { const e=document.getElementById(id); if(e)e.value=''; });
+    document.getElementById('filtroStatus').value='TODOS';
     aplicarFiltros();
 }
 
-function mudarPagina(pagina) {
-    const total = Math.ceil(estadoPagina.chamados.length / estadoPagina.itensPorPagina);
-    if (pagina < 1 || pagina > total) return;
-    estadoPagina.paginaAtual = pagina;
+function mudarPagina(p) {
+    const t = Math.ceil(estadoPagina.chamados.length/estadoPagina.itensPorPagina);
+    if(p<1||p>t) return;
+    estadoPagina.paginaAtual = p;
     renderizarTabela();
     renderizarPaginacao();
 }
 
 function configurarLogout() {
     document.getElementById('btnSair')?.addEventListener('click', async () => {
-        try {
-            await auth.signOut();
-            window.location.href = 'login.html';
-        } catch (error) {
-            console.error('Erro ao sair:', error);
-        }
+        await auth.signOut();
+        window.location.href = 'login.html';
     });
 }
 
-function formatarDataHora(data) {
-    const d = String(data.getDate()).padStart(2, '0');
-    const m = String(data.getMonth() + 1).padStart(2, '0');
-    const a = data.getFullYear();
-    const h = String(data.getHours()).padStart(2, '0');
-    const min = String(data.getMinutes()).padStart(2, '0');
-    return `${d}/${m}/${a} ${h}:${min}`;
-}
-
-function getStatusClass(status) {
-    const classes = {
-        'ABERTO': 'bg-danger',
-        'EXECUCAO': 'bg-warning text-dark',
-        'AGUARDANDO': 'bg-info',
-        'FINALIZADO': 'bg-success'
-    };
-    return classes[status] || 'bg-secondary';
-}
-
-function mostrarLoading(mostrar) {
-    const spinner = document.getElementById('loadingSpinner');
-    if (spinner) spinner.style.display = mostrar ? 'block' : 'none';
+function mostrarLoading(m) {
+    const s = document.getElementById('loadingSpinner');
+    if (s) s.style.display = m ? 'block' : 'none';
 }
