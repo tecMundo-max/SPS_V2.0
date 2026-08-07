@@ -6,15 +6,22 @@ import { router } from '../core/router.js';
 // Estado da página
 let estadoPagina = {
     chamados: [],
+    listas: {
+        equipamentos: [],
+        cenarios: []
+    },
     filtros: {
         dataInicial: '',
         dataFinal: '',
         status: 'TODOS',
-        analista: '',
-        termoBusca: ''
+        numero: '',
+        msisdn: '',
+        cliente: ''
     },
     paginaAtual: 1,
-    itensPorPagina: 10
+    itensPorPagina: 10,
+    editando: false,
+    chamadoEditando: null
 };
 
 /**
@@ -29,11 +36,17 @@ export async function initChamados() {
             return;
         }
 
-        // Atualizar informações do usuário na interface
+        // Atualizar informações do usuário
         atualizarInfoUsuario(usuario);
 
-        // Configurar data inicial e final padrão (últimos 30 dias)
-        configurarDatasPadrao();
+        // Carregar listas do banco
+        await carregarListas();
+
+        // Configurar campos automáticos
+        configurarCamposAutomaticos(usuario);
+
+        // Gerar próximo número
+        await gerarProximoNumero();
 
         // Carregar dados iniciais
         await carregarDados();
@@ -44,6 +57,9 @@ export async function initChamados() {
         // Configurar logout
         configurarLogout();
 
+        // Configurar máscara MSISDN
+        configurarMascaraMSISDN();
+
         console.log('✅ Módulo de Chamados inicializado');
     } catch (error) {
         console.error('Erro ao inicializar chamados:', error);
@@ -52,7 +68,7 @@ export async function initChamados() {
 }
 
 /**
- * Atualiza informações do usuário na interface
+ * Atualiza informações do usuário
  */
 function atualizarInfoUsuario(usuario) {
     const elementoUsuario = document.getElementById('usuarioLogado');
@@ -62,29 +78,97 @@ function atualizarInfoUsuario(usuario) {
 }
 
 /**
- * Configura datas padrão para os filtros
+ * Carrega listas do Firebase
  */
-function configurarDatasPadrao() {
-    const hoje = new Date();
-    const trintaDiasAtras = new Date();
-    trintaDiasAtras.setDate(hoje.getDate() - 30);
-
-    const dataInicialInput = document.getElementById('dataInicial');
-    const dataFinalInput = document.getElementById('dataFinal');
-
-    if (dataInicialInput) {
-        dataInicialInput.value = trintaDiasAtras.toISOString().split('T')[0];
-        estadoPagina.filtros.dataInicial = dataInicialInput.value;
-    }
-
-    if (dataFinalInput) {
-        dataFinalInput.value = hoje.toISOString().split('T')[0];
-        estadoPagina.filtros.dataFinal = dataFinalInput.value;
+async function carregarListas() {
+    try {
+        estadoPagina.listas = await chamadosService.buscarListas();
+        preencherDropdowns();
+    } catch (error) {
+        console.error('Erro ao carregar listas:', error);
     }
 }
 
 /**
- * Carrega todos os dados necessários
+ * Preenche dropdowns de equipamento e cenário
+ */
+function preencherDropdowns() {
+    const selectEquipamento = document.getElementById('equipamento');
+    const selectCenario = document.getElementById('cenario');
+
+    // Preencher Equipamentos
+    if (selectEquipamento) {
+        selectEquipamento.innerHTML = '<option value="">Selecione...</option>';
+        estadoPagina.listas.equipamentos.forEach(equip => {
+            selectEquipamento.innerHTML += `<option value="${equip}">${equip}</option>`;
+        });
+    }
+
+    // Preencher Cenários
+    if (selectCenario) {
+        selectCenario.innerHTML = '<option value="">Selecione...</option>';
+        estadoPagina.listas.cenarios.forEach(cen => {
+            selectCenario.innerHTML += `<option value="${cen}">${cen}</option>`;
+        });
+    }
+}
+
+/**
+ * Configura campos automáticos
+ */
+function configurarCamposAutomaticos(usuario) {
+    // Analista
+    const campoAnalista = document.getElementById('analista');
+    if (campoAnalista) {
+        campoAnalista.value = usuario.email?.split('@')[0] || 'helio';
+    }
+
+    // Data/Hora
+    const campoDataHora = document.getElementById('dataHora');
+    if (campoDataHora) {
+        campoDataHora.value = formatarDataHora(new Date());
+    }
+}
+
+/**
+ * Gera próximo número de chamado
+ */
+async function gerarProximoNumero() {
+    try {
+        const numero = await chamadosService.gerarNumeroChamado();
+        const campoChamado = document.getElementById('chamado');
+        if (campoChamado) {
+            campoChamado.value = numero;
+        }
+    } catch (error) {
+        console.error('Erro ao gerar número:', error);
+    }
+}
+
+/**
+ * Configura máscara MSISDN
+ */
+function configurarMascaraMSISDN() {
+    const campoMSISDN = document.getElementById('msisdn');
+    if (campoMSISDN) {
+        campoMSISDN.addEventListener('input', (e) => {
+            let valor = e.target.value.replace(/\D/g, '');
+            
+            if (valor.length <= 11) {
+                if (valor.length > 2) {
+                    valor = `(${valor.substring(0, 2)}) ${valor.substring(2)}`;
+                }
+                if (valor.length > 10) {
+                    valor = `${valor.substring(0, 10)}-${valor.substring(10)}`;
+                }
+                e.target.value = valor;
+            }
+        });
+    }
+}
+
+/**
+ * Carrega dados dos chamados
  */
 async function carregarDados() {
     try {
@@ -93,15 +177,16 @@ async function carregarDados() {
         // Carregar chamados com filtros
         estadoPagina.chamados = await chamadosService.buscarChamadosComFiltros(estadoPagina.filtros);
         
+        // Atualizar estatísticas
+        await atualizarCards();
+        
         // Resetar paginação
         estadoPagina.paginaAtual = 1;
-        
-        // Atualizar info de registros
-        atualizarInfoRegistros();
         
         // Renderizar tabela
         renderizarTabela();
         renderizarPaginacao();
+        atualizarInfoRegistros();
 
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
@@ -112,18 +197,33 @@ async function carregarDados() {
 }
 
 /**
- * Atualiza informação de quantidade de registros
+ * Atualiza cards de status
  */
-function atualizarInfoRegistros() {
-    const infoRegistros = document.getElementById('infoRegistros');
-    if (infoRegistros) {
-        const total = estadoPagina.chamados.length;
-        infoRegistros.textContent = `Total de registros: ${total}`;
+async function atualizarCards() {
+    try {
+        const stats = await chamadosService.obterEstatisticas();
+        
+        document.getElementById('cardAberto').textContent = stats.aberto || 0;
+        document.getElementById('cardExecucao').textContent = stats.execucao || 0;
+        document.getElementById('cardAguardando').textContent = stats.aguardando || 0;
+        document.getElementById('cardFinalizado').textContent = stats.finalizado || 0;
+    } catch (error) {
+        console.error('Erro ao atualizar cards:', error);
     }
 }
 
 /**
- * Renderiza a tabela de chamados
+ * Atualiza info de registros
+ */
+function atualizarInfoRegistros() {
+    const infoRegistros = document.getElementById('infoRegistros');
+    if (infoRegistros) {
+        infoRegistros.textContent = `Total de registros: ${estadoPagina.chamados.length}`;
+    }
+}
+
+/**
+ * Renderiza tabela de chamados
  */
 function renderizarTabela() {
     const tbody = document.getElementById('tabelaChamados');
@@ -136,7 +236,7 @@ function renderizarTabela() {
     if (chamadosPaginados.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="text-center py-4 text-muted">
+                <td colspan="10" class="text-center py-4 text-muted">
                     <i class="bi bi-inbox display-4 d-block mb-3"></i>
                     Nenhum chamado encontrado
                 </td>
@@ -147,33 +247,22 @@ function renderizarTabela() {
 
     tbody.innerHTML = chamadosPaginados.map(chamado => `
         <tr>
-            <td>
-                <span class="badge bg-secondary">#${chamado.numero}</span>
-            </td>
-            <td>${formatarData(chamado.criadoEm)}</td>
-            <td>
-                <strong>${chamado.cliente || '-'}</strong>
-            </td>
-            <td>${chamado.linha || '-'}</td>
+            <td><span class="badge bg-secondary">#${chamado.numero || '-'}</span></td>
+            <td>${chamado.dataHora || '-'}</td>
+            <td>${chamado.analista || '-'}</td>
+            <td>${chamado.msisdn || '-'}</td>
+            <td>${chamado.equipamento || '-'}</td>
+            <td>${chamado.cenario || '-'}</td>
+            <td>${chamado.email || '-'}</td>
             <td>
                 <span class="badge ${getStatusClass(chamado.status)}">
-                    ${getStatusTexto(chamado.status)}
+                    ${chamado.status || 'ABERTO'}
                 </span>
             </td>
-            <td>
-                <span class="badge bg-info">${chamado.fila || 'GERAL'}</span>
-            </td>
-            <td>${chamado.analista || 'Não atribuído'}</td>
-            <td>
-                <small class="text-muted">${chamado.ultimaAtualizacao || '-'}</small>
-            </td>
+            <td>${chamado.observacoes || '-'}</td>
             <td>
                 <div class="btn-group btn-group-sm">
-                    <button 
-                        class="btn btn-outline-primary" 
-                        onclick="window.editarChamado('${chamado.id}')"
-                        title="Editar"
-                    >
+                    <button class="btn btn-outline-primary" onclick="window.editarChamado('${chamado.id}')" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </button>
                 </div>
@@ -183,7 +272,7 @@ function renderizarTabela() {
 }
 
 /**
- * Renderiza a paginação
+ * Renderiza paginação
  */
 function renderizarPaginacao() {
     const container = document.getElementById('paginacaoChamados');
@@ -198,32 +287,23 @@ function renderizarPaginacao() {
 
     let html = '<ul class="pagination pagination-sm mb-0">';
     
-    // Botão Anterior
     html += `
         <li class="page-item ${estadoPagina.paginaAtual === 1 ? 'disabled' : ''}">
-            <button class="page-link" onclick="window.mudarPagina(${estadoPagina.paginaAtual - 1})">
-                ◄
-            </button>
+            <button class="page-link" onclick="window.mudarPagina(${estadoPagina.paginaAtual - 1})">◄</button>
         </li>
     `;
 
-    // Páginas
     for (let i = 1; i <= totalPaginas; i++) {
         html += `
             <li class="page-item ${i === estadoPagina.paginaAtual ? 'active' : ''}">
-                <button class="page-link" onclick="window.mudarPagina(${i})">
-                    ${i}
-                </button>
+                <button class="page-link" onclick="window.mudarPagina(${i})">${i}</button>
             </li>
         `;
     }
 
-    // Botão Próximo
     html += `
         <li class="page-item ${estadoPagina.paginaAtual === totalPaginas ? 'disabled' : ''}">
-            <button class="page-link" onclick="window.mudarPagina(${estadoPagina.paginaAtual + 1})">
-                ►
-            </button>
+            <button class="page-link" onclick="window.mudarPagina(${estadoPagina.paginaAtual + 1})">►</button>
         </li>
     `;
 
@@ -232,125 +312,137 @@ function renderizarPaginacao() {
 }
 
 /**
- * Configura todos os event listeners
+ * Configura event listeners
  */
 function configurarEventListeners() {
-    // Botão de busca
+    // Botão Salvar
+    const btnSalvar = document.getElementById('btnSalvar');
+    if (btnSalvar) {
+        btnSalvar.addEventListener('click', salvarChamado);
+    }
+
+    // Botão Cancelar
+    const btnCancelar = document.getElementById('btnCancelar');
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', cancelarEdicao);
+    }
+
+    // Botão Buscar
     const btnBuscar = document.getElementById('btnBuscar');
     if (btnBuscar) {
-        btnBuscar.addEventListener('click', async () => {
-            await aplicarFiltros();
+        btnBuscar.addEventListener('click', aplicarFiltros);
+    }
+
+    // Enter na busca
+    const inputBuscaNumero = document.getElementById('buscaNumero');
+    if (inputBuscaNumero) {
+        inputBuscaNumero.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') aplicarFiltros();
         });
     }
 
-    // Busca por Enter no campo de busca
-    const inputBusca = document.getElementById('inputBusca');
-    if (inputBusca) {
-        inputBusca.addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter') {
-                await aplicarFiltros();
-            }
-        });
-    }
-
-    // Botão Novo Chamado
-    const btnNovo = document.getElementById('btnNovoChamado');
-    if (btnNovo) {
-        btnNovo.addEventListener('click', () => {
-            abrirModalNovoChamado();
-        });
-    }
-
-    // Botão Limpar Filtros
+    // Botão Limpar
     const btnLimpar = document.getElementById('btnLimparFiltros');
     if (btnLimpar) {
-        btnLimpar.addEventListener('click', () => {
-            limparFiltros();
-        });
+        btnLimpar.addEventListener('click', limparFiltros);
     }
 
-    // Expor funções para escopo global
+    // Expor funções globais
     window.editarChamado = editarChamado;
     window.mudarPagina = mudarPagina;
-    window.fecharModal = fecharModal;
-    window.salvarChamado = salvarChamado;
 }
 
 /**
- * Aplica os filtros selecionados
+ * Salva chamado (novo ou edição)
  */
-async function aplicarFiltros() {
-    // Atualizar filtros
-    estadoPagina.filtros.dataInicial = document.getElementById('dataInicial')?.value || '';
-    estadoPagina.filtros.dataFinal = document.getElementById('dataFinal')?.value || '';
-    estadoPagina.filtros.status = document.getElementById('filtroStatus')?.value || 'TODOS';
-    estadoPagina.filtros.analista = document.getElementById('filtroAnalista')?.value || '';
-    estadoPagina.filtros.termoBusca = document.getElementById('inputBusca')?.value || '';
+async function salvarChamado() {
+    try {
+        const dados = {
+            analista: document.getElementById('analista').value,
+            dataHora: document.getElementById('dataHora').value,
+            chamado: document.getElementById('chamado').value,
+            msisdn: document.getElementById('msisdn').value,
+            equipamento: document.getElementById('equipamento').value,
+            cenario: document.getElementById('cenario').value,
+            observacoes: document.getElementById('observacoes').value,
+            email: document.getElementById('email').value,
+            flag: document.getElementById('flag').checked,
+            tituloEmail: document.getElementById('tituloEmail').value
+        };
 
-    // Recarregar dados
-    await carregarDados();
-}
+        if (!dados.chamado) {
+            mostrarErro('Número do chamado é obrigatório');
+            return;
+        }
 
-/**
- * Limpa todos os filtros
- */
-function limparFiltros() {
-    configurarDatasPadrao();
-    
-    const filtroStatus = document.getElementById('filtroStatus');
-    const filtroAnalista = document.getElementById('filtroAnalista');
-    const inputBusca = document.getElementById('inputBusca');
-    
-    if (filtroStatus) filtroStatus.value = 'TODOS';
-    if (filtroAnalista) filtroAnalista.value = '';
-    if (inputBusca) inputBusca.value = '';
+        if (estadoPagina.editando && estadoPagina.chamadoEditando) {
+            await chamadosService.atualizarChamado(estadoPagina.chamadoEditando, dados);
+            mostrarSucesso('Chamado atualizado com sucesso!');
+        } else {
+            await chamadosService.criarChamado(dados);
+            mostrarSucesso('Chamado criado com sucesso!');
+            await gerarProximoNumero();
+        }
 
-    aplicarFiltros();
-}
+        cancelarEdicao();
+        await carregarDados();
 
-/**
- * Abre modal para novo chamado
- */
-function abrirModalNovoChamado() {
-    const modal = document.getElementById('modalChamado');
-    const modalTitle = document.getElementById('modalChamadoTitle');
-    const form = document.getElementById('formChamado');
-
-    if (modal && modalTitle && form) {
-        modalTitle.textContent = 'Novo Chamado';
-        form.reset();
-        document.getElementById('chamadoId').value = '';
-        
-        const modalInstance = new bootstrap.Modal(modal);
-        modalInstance.show();
+    } catch (error) {
+        console.error('Erro ao salvar chamado:', error);
+        mostrarErro('Erro ao salvar chamado');
     }
 }
 
 /**
- * Edita um chamado existente
+ * Cancela edição
+ */
+function cancelarEdicao() {
+    estadoPagina.editando = false;
+    estadoPagina.chamadoEditando = null;
+    
+    document.getElementById('formChamado').reset();
+    configurarCamposAutomaticos(auth.currentUser);
+    gerarProximoNumero();
+    
+    const btnSalvar = document.getElementById('btnSalvar');
+    if (btnSalvar) {
+        btnSalvar.innerHTML = '<i class="fas fa-save"></i> Salvar';
+        btnSalvar.classList.remove('btn-warning');
+        btnSalvar.classList.add('btn-primary');
+    }
+}
+
+/**
+ * Edita chamado existente
  */
 async function editarChamado(id) {
     try {
         const chamado = await chamadosService.buscarChamado(id);
         
-        const modal = document.getElementById('modalChamado');
-        const modalTitle = document.getElementById('modalChamadoTitle');
+        estadoPagina.editando = true;
+        estadoPagina.chamadoEditando = id;
         
-        if (modal && modalTitle) {
-            modalTitle.textContent = `Editando Chamado #${chamado.numero}`;
-            
-            // Preencher formulário
-            document.getElementById('chamadoId').value = chamado.id;
-            document.getElementById('cliente').value = chamado.cliente || '';
-            document.getElementById('linha').value = chamado.linha || '';
-            document.getElementById('fila').value = chamado.fila || 'GERAL';
-            document.getElementById('analista').value = chamado.analista || '';
-            document.getElementById('status').value = chamado.status || 'ABERTO';
-            document.getElementById('observacao').value = chamado.observacao || '';
-            
-            const modalInstance = new bootstrap.Modal(modal);
-            modalInstance.show();
+        document.getElementById('analista').value = chamado.analista || '';
+        document.getElementById('dataHora').value = chamado.dataHora || '';
+        document.getElementById('chamado').value = chamado.chamado || chamado.numero || '';
+        document.getElementById('msisdn').value = chamado.msisdn || '';
+        document.getElementById('equipamento').value = chamado.equipamento || '';
+        document.getElementById('cenario').value = chamado.cenario || '';
+        document.getElementById('observacoes').value = chamado.observacoes || '';
+        document.getElementById('email').value = chamado.email || '';
+        document.getElementById('flag').checked = chamado.flag || false;
+        document.getElementById('tituloEmail').value = chamado.tituloEmail || '';
+        
+        const btnSalvar = document.getElementById('btnSalvar');
+        if (btnSalvar) {
+            btnSalvar.innerHTML = '<i class="fas fa-edit"></i> Atualizar';
+            btnSalvar.classList.remove('btn-primary');
+            btnSalvar.classList.add('btn-warning');
         }
+        
+        // Scroll para o formulário
+        document.getElementById('formChamado').scrollIntoView({ behavior: 'smooth' });
+        
     } catch (error) {
         console.error('Erro ao carregar chamado:', error);
         mostrarErro('Erro ao carregar dados do chamado');
@@ -358,71 +450,40 @@ async function editarChamado(id) {
 }
 
 /**
- * Salva um chamado (novo ou edição)
+ * Aplica filtros
  */
-async function salvarChamado() {
-    try {
-        const id = document.getElementById('chamadoId').value;
-        const usuario = auth.currentUser;
+async function aplicarFiltros() {
+    estadoPagina.filtros.numero = document.getElementById('buscaNumero')?.value || '';
+    estadoPagina.filtros.msisdn = document.getElementById('buscaMSISDN')?.value || '';
+    estadoPagina.filtros.cliente = document.getElementById('buscaCliente')?.value || '';
+    estadoPagina.filtros.status = document.getElementById('filtroStatus')?.value || 'TODOS';
+    estadoPagina.filtros.dataInicial = document.getElementById('dataInicial')?.value || '';
+    estadoPagina.filtros.dataFinal = document.getElementById('dataFinal')?.value || '';
 
-        const dados = {
-            cliente: document.getElementById('cliente').value,
-            linha: document.getElementById('linha').value,
-            fila: document.getElementById('fila').value,
-            analista: document.getElementById('analista').value,
-            status: document.getElementById('status').value,
-            observacao: document.getElementById('observacao').value,
-            criadoPor: usuario?.email || 'Sistema'
-        };
-
-        // Validações básicas
-        if (!dados.cliente || !dados.linha) {
-            mostrarErro('Cliente e Linha são campos obrigatórios');
-            return;
-        }
-
-        if (id) {
-            // Atualizar chamado existente
-            await chamadosService.atualizarChamado(id, dados);
-            mostrarSucesso('Chamado atualizado com sucesso!');
-        } else {
-            // Criar novo chamado
-            await chamadosService.criarChamado(dados);
-            mostrarSucesso('Chamado criado com sucesso!');
-        }
-
-        // Fechar modal e recarregar dados
-        fecharModal();
-        await carregarDados();
-
-    } catch (error) {
-        console.error('Erro ao salvar chamado:', error);
-        mostrarErro('Erro ao salvar chamado. Tente novamente.');
-    }
+    await carregarDados();
 }
 
 /**
- * Fecha o modal
+ * Limpa filtros
  */
-function fecharModal() {
-    const modal = document.getElementById('modalChamado');
-    if (modal) {
-        const modalInstance = bootstrap.Modal.getInstance(modal);
-        if (modalInstance) {
-            modalInstance.hide();
-        }
-    }
+function limparFiltros() {
+    document.getElementById('buscaNumero').value = '';
+    document.getElementById('buscaMSISDN').value = '';
+    document.getElementById('buscaCliente').value = '';
+    document.getElementById('filtroStatus').value = 'TODOS';
+    document.getElementById('dataInicial').value = '';
+    document.getElementById('dataFinal').value = '';
+    
+    aplicarFiltros();
 }
 
 /**
- * Muda a página atual
+ * Muda página
  */
 function mudarPagina(pagina) {
     const totalPaginas = Math.ceil(estadoPagina.chamados.length / estadoPagina.itensPorPagina);
     
-    if (pagina < 1 || pagina > totalPaginas) {
-        return;
-    }
+    if (pagina < 1 || pagina > totalPaginas) return;
 
     estadoPagina.paginaAtual = pagina;
     renderizarTabela();
@@ -430,7 +491,7 @@ function mudarPagina(pagina) {
 }
 
 /**
- * Configura o logout
+ * Configura logout
  */
 function configurarLogout() {
     const btnSair = document.getElementById('btnSair');
@@ -446,31 +507,24 @@ function configurarLogout() {
     }
 }
 
-// Funções auxiliares de formatação
-function formatarData(dataISO) {
-    if (!dataISO) return '-';
-    const data = new Date(dataISO);
-    return data.toLocaleDateString('pt-BR');
+// Funções auxiliares
+function formatarDataHora(data) {
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    const hora = String(data.getHours()).padStart(2, '0');
+    const min = String(data.getMinutes()).padStart(2, '0');
+    return `${dia}/${mes}/${ano} ${hora}:${min}`;
 }
 
 function getStatusClass(status) {
     const classes = {
-        'ABERTO': 'bg-warning text-dark',
-        'EM_ANDAMENTO': 'bg-primary',
-        'FECHADO': 'bg-success',
-        'CANCELADO': 'bg-danger'
+        'ABERTO': 'bg-danger',
+        'EXECUCAO': 'bg-warning text-dark',
+        'AGUARDANDO': 'bg-info',
+        'FINALIZADO': 'bg-success'
     };
     return classes[status] || 'bg-secondary';
-}
-
-function getStatusTexto(status) {
-    const textos = {
-        'ABERTO': 'Aberto',
-        'EM_ANDAMENTO': 'Em Andamento',
-        'FECHADO': 'Fechado',
-        'CANCELADO': 'Cancelado'
-    };
-    return textos[status] || status;
 }
 
 function mostrarLoading(mostrar) {
@@ -481,9 +535,9 @@ function mostrarLoading(mostrar) {
 }
 
 function mostrarErro(mensagem) {
-    alert(mensagem);
+    alert('❌ ' + mensagem);
 }
 
 function mostrarSucesso(mensagem) {
-    alert(mensagem);
+    alert('✅ ' + mensagem);
 }
