@@ -6,13 +6,6 @@ import { router } from '../core/router.js';
 // Estado da página
 let estadoPagina = {
     chamados: [],
-    estatisticas: {
-        total: 0,
-        abertos: 0,
-        emAndamento: 0,
-        fechados: 0,
-        hoje: 0
-    },
     filtros: {
         dataInicial: '',
         dataFinal: '',
@@ -97,15 +90,14 @@ async function carregarDados() {
     try {
         mostrarLoading(true);
 
-        // Carregar estatísticas
-        estadoPagina.estatisticas = await chamadosService.obterEstatisticas();
-        atualizarCards();
-
         // Carregar chamados com filtros
         estadoPagina.chamados = await chamadosService.buscarChamadosComFiltros(estadoPagina.filtros);
         
         // Resetar paginação
         estadoPagina.paginaAtual = 1;
+        
+        // Atualizar info de registros
+        atualizarInfoRegistros();
         
         // Renderizar tabela
         renderizarTabela();
@@ -120,16 +112,14 @@ async function carregarDados() {
 }
 
 /**
- * Atualiza os cards de estatísticas
+ * Atualiza informação de quantidade de registros
  */
-function atualizarCards() {
-    const stats = estadoPagina.estatisticas;
-    
-    document.getElementById('totalChamados').textContent = stats.total;
-    document.getElementById('chamadosAbertos').textContent = stats.abertos;
-    document.getElementById('chamadosEmAndamento').textContent = stats.emAndamento;
-    document.getElementById('chamadosFechados').textContent = stats.fechados;
-    document.getElementById('chamadosHoje').textContent = stats.hoje;
+function atualizarInfoRegistros() {
+    const infoRegistros = document.getElementById('infoRegistros');
+    if (infoRegistros) {
+        const total = estadoPagina.chamados.length;
+        infoRegistros.textContent = `Total de registros: ${total}`;
+    }
 }
 
 /**
@@ -491,11 +481,9 @@ function mostrarLoading(mostrar) {
 }
 
 function mostrarErro(mensagem) {
-    // Implementar toast ou alert
     alert(mensagem);
 }
 
 function mostrarSucesso(mensagem) {
-    // Implementar toast ou alert
     alert(mensagem);
 }
