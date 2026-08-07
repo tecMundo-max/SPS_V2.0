@@ -1,4 +1,4 @@
-// Configuração do Firebase
+// Configuração do Firebase - Versão Compat
 const firebaseConfig = {
     apiKey: "AIzaSyDYnvcRKt4qDpk08_4MQVNEOr9Iq95X980",
     authDomain: "sps003hjr.firebaseapp.com",
@@ -10,9 +10,11 @@ const firebaseConfig = {
 };
 
 // Inicializa Firebase
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
-// Exporta serviços
+// Exporta serviços (versão compat)
 const auth = firebase.auth();
 const database = firebase.database();
 
