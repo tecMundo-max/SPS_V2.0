@@ -1,11 +1,8 @@
 // js/services/chamadosService.js
-import { db } from '../config/firebase.js';
+import { db } from '../firebase/config.js';  // ← CORRIGIDO
 import { ref, get, set, update, push } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
 export const chamadosService = {
-    /**
-     * Busca listas de equipamentos e cenários
-     */
     async buscarListas() {
         try {
             const listasRef = ref(db, 'listas');
@@ -25,9 +22,6 @@ export const chamadosService = {
         }
     },
 
-    /**
-     * Gera próximo número de chamado
-     */
     async gerarNumeroChamado() {
         try {
             const chamadosRef = ref(db, 'chamados');
@@ -53,9 +47,6 @@ export const chamadosService = {
         }
     },
 
-    /**
-     * Lista todos os chamados
-     */
     async listarChamados() {
         try {
             const chamadosRef = ref(db, 'chamados');
@@ -73,7 +64,6 @@ export const chamadosService = {
                 });
             });
 
-            // Ordenar por data (mais recente primeiro)
             return chamados.sort((a, b) => {
                 const dateA = new Date(b.criadoEm || 0);
                 const dateB = new Date(a.criadoEm || 0);
@@ -85,9 +75,6 @@ export const chamadosService = {
         }
     },
 
-    /**
-     * Criar novo chamado
-     */
     async criarChamado(dados) {
         try {
             const chamadosRef = ref(db, 'chamados');
@@ -107,13 +94,12 @@ export const chamadosService = {
                 email: dados.email || '',
                 flag: dados.flag || false,
                 tituloEmail: dados.tituloEmail || '',
-                status: dados.status || 'ABERTO',
+                status: 'ABERTO',
                 criadoEm: new Date().toISOString(),
                 atualizadoEm: new Date().toISOString()
             };
 
             await set(novoChamadoRef, chamado);
-            
             console.log('✅ Chamado criado:', chamado);
             
             return {
@@ -126,36 +112,25 @@ export const chamadosService = {
         }
     },
 
-    /**
-     * Atualizar chamado
-     */
     async atualizarChamado(id, dados) {
         try {
             const chamadoRef = ref(db, `chamados/${id}`);
             
             const atualizacao = {
                 ...dados,
-                atualizadoEm: new Date().toISOString(),
-                dataHora: dados.dataHora || new Date().toLocaleString('pt-BR')
+                atualizadoEm: new Date().toISOString()
             };
 
             await update(chamadoRef, atualizacao);
-            
             console.log('✅ Chamado atualizado:', id);
             
-            return {
-                id,
-                ...atualizacao
-            };
+            return { id, ...atualizacao };
         } catch (error) {
             console.error('Erro ao atualizar chamado:', error);
             throw error;
         }
     },
 
-    /**
-     * Buscar chamados com filtros
-     */
     async buscarChamadosComFiltros(filtros = {}) {
         try {
             const chamados = await this.listarChamados();
@@ -164,8 +139,8 @@ export const chamadosService = {
                 let atendeFiltro = true;
 
                 if (filtros.numero) {
-                    const numeroChamado = chamado.numero || chamado.chamado || '';
-                    if (!numeroChamado.includes(filtros.numero)) atendeFiltro = false;
+                    const num = chamado.numero || chamado.chamado || '';
+                    if (!num.includes(filtros.numero)) atendeFiltro = false;
                 }
 
                 if (filtros.msisdn) {
@@ -186,8 +161,7 @@ export const chamadosService = {
 
                 if (filtros.dataInicial) {
                     const dataChamado = new Date(chamado.criadoEm || 0);
-                    const dataInicial = new Date(filtros.dataInicial);
-                    if (dataChamado < dataInicial) atendeFiltro = false;
+                    if (dataChamado < new Date(filtros.dataInicial)) atendeFiltro = false;
                 }
 
                 if (filtros.dataFinal) {
@@ -200,18 +174,14 @@ export const chamadosService = {
                 return atendeFiltro;
             });
         } catch (error) {
-            console.error('Erro ao buscar chamados com filtros:', error);
+            console.error('Erro ao buscar com filtros:', error);
             throw error;
         }
     },
 
-    /**
-     * Obter estatísticas
-     */
     async obterEstatisticas() {
         try {
             const chamados = await this.listarChamados();
-            
             return {
                 aberto: chamados.filter(c => c.status === 'ABERTO').length,
                 execucao: chamados.filter(c => c.status === 'EXECUCAO').length,
@@ -224,9 +194,6 @@ export const chamadosService = {
         }
     },
 
-    /**
-     * Buscar chamado por ID
-     */
     async buscarChamado(id) {
         try {
             const chamadoRef = ref(db, `chamados/${id}`);
