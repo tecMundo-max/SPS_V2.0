@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Navbar -->
+    <!-- Navbar Analista -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">
@@ -37,7 +37,7 @@
                     </li>
                 </ul>
                 <span class="navbar-text me-3" id="userInfo">
-                    <i class="bi bi-person-circle"></i> Analista
+                    <i class="bi bi-person-circle"></i> Carregando...
                 </span>
                 <button class="btn btn-outline-light btn-sm" onclick="logout()">
                     <i class="bi bi-box-arrow-right"></i> Sair
@@ -57,7 +57,7 @@
             </div>
             <div class="section-body">
                 <form id="formChamado">
-                    <!-- Linha 1: Analista, Data/Hora, Chamado, Linha -->
+                    <!-- Linha 1 -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-3">
                             <label class="form-label">
@@ -87,7 +87,7 @@
                         </div>
                     </div>
 
-                    <!-- Linha 2: Equipamento, Cenário, Email, Flag -->
+                    <!-- Linha 2 -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-3">
                             <label class="form-label">
@@ -118,14 +118,12 @@
                             </label>
                             <div class="form-check mt-2">
                                 <input class="form-check-input" type="checkbox" id="flag">
-                                <label class="form-check-label" for="flag">
-                                    Marcar flag
-                                </label>
+                                <label class="form-check-label" for="flag">Marcar flag</label>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Linha 3: Título -->
+                    <!-- Linha 3 -->
                     <div class="row g-3 mb-3">
                         <div class="col-12">
                             <label class="form-label">
@@ -136,7 +134,7 @@
                         </div>
                     </div>
 
-                    <!-- Linha 4: Observações -->
+                    <!-- Linha 4 -->
                     <div class="row g-3 mb-3">
                         <div class="col-12">
                             <label class="form-label">
@@ -147,7 +145,7 @@
                         </div>
                     </div>
 
-                    <!-- Botões de Ação -->
+                    <!-- Botões -->
                     <div class="row">
                         <div class="col-12">
                             <button type="submit" class="btn btn-success btn-lg me-2">
@@ -180,29 +178,26 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Chamado</label>
-                        <input type="text" class="form-control" id="filtroChamado" 
-                               placeholder="C-1001">
+                        <input type="text" class="form-control" id="filtroChamado" placeholder="C-1001">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Linha</label>
-                        <input type="text" class="form-control" id="filtroLinha" 
-                               placeholder="55119...">
+                        <input type="text" class="form-control" id="filtroLinha" placeholder="55119...">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Analista</label>
-                        <input type="text" class="form-control" id="filtroAnalista" 
-                               placeholder="Nome">
+                        <input type="text" class="form-control" id="filtroAnalista" placeholder="Nome">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">&nbsp;</label>
                         <div class="d-grid gap-2 d-md-flex">
-                            <button class="btn btn-primary" onclick="pesquisarChamados()">
+                            <button class="btn btn-primary btn-sm" onclick="pesquisarChamados()">
                                 <i class="bi bi-search"></i> Buscar
                             </button>
-                            <button class="btn btn-info" onclick="filtrarHoje()">
+                            <button class="btn btn-info btn-sm" onclick="filtrarHoje()">
                                 <i class="bi bi-calendar-check"></i> Hoje
                             </button>
-                            <button class="btn btn-secondary" onclick="limparFiltros()">
+                            <button class="btn btn-secondary btn-sm" onclick="limparFiltros()">
                                 <i class="bi bi-eraser"></i> Limpar
                             </button>
                         </div>
@@ -249,14 +244,68 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="text-center p-3" id="botaoMostrarMais" style="display:none;">
-                    <button class="btn btn-outline-primary btn-lg" onclick="carregarMais()">
-                        <i class="bi bi-arrow-down-circle"></i> Mostrar Mais
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal de Edição -->
+    <div class="modal fade" id="modalEdicao" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square"></i> Editar Chamado
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEdicao">
+                        <input type="hidden" id="editId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Chamado *</label>
+                                <input type="text" class="form-control" id="editChamado" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Linha *</label>
+                                <input type="text" class="form-control" id="editLinha" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Equipamento</label>
+                                <select class="form-select" id="editEquipamento">
+                                    <option value="">Selecione...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Cenário</label>
+                                <select class="form-select" id="editCenario">
+                                    <option value="">Selecione...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editEmail">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Título</label>
+                                <input type="text" class="form-control" id="editTitulo">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Observações</label>
+                                <textarea class="form-control" id="editObservacoes" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarEdicao()">
+                        <i class="bi bi-check-circle"></i> Salvar Alterações
                     </button>
                 </div>
             </div>
         </div>
-
     </div>
 
     <!-- Firebase Scripts -->
@@ -281,40 +330,55 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         
-        // Dados do usuário analista
-        const USUARIO_ATUAL = {
-            nome: 'Analista SPS',
-            email: 'analista@sps.com',
-            role: 'ANALISTA',
-            isAdmin: false
-        };
+        // ============================================
+        // CARREGAR USUÁRIO LOGADO (CORRIGIDO)
+        // ============================================
+        function carregarUsuarioLogado() {
+            const dadosSessao = JSON.parse(localStorage.getItem('sps_user') || '{}');
+            
+            if (!dadosSessao.uid) {
+                return {
+                    uid: 'dev',
+                    nome: 'Analista SPS',
+                    email: 'analista@sps.com',
+                    role: 'ANALISTA',
+                    admin: false
+                };
+            }
+            
+            return {
+                uid: dadosSessao.uid,
+                nome: dadosSessao.nome || dadosSessao.username || dadosSessao.email?.split('@')[0] || 'Analista',
+                email: dadosSessao.email || '',
+                role: dadosSessao.role || 'ANALISTA',
+                admin: dadosSessao.admin || false
+            };
+        }
+
+        const USUARIO_ATUAL = carregarUsuarioLogado();
 
         // ============================================
         // INICIALIZAÇÃO
         // ============================================
         async function inicializar() {
             console.log('🚀 Inicializando Chamados (Analista)...');
+            console.log('👤 Usuário:', USUARIO_ATUAL.nome, '-', USUARIO_ATUAL.email);
             
-            // Configurar UI
             document.getElementById('userInfo').innerHTML = 
                 `<i class="bi bi-person-circle"></i> ${USUARIO_ATUAL.nome} (ANALISTA)`;
             document.getElementById('analista').value = USUARIO_ATUAL.nome;
             
-            // Atualizar data/hora
             atualizarDataHora();
             setInterval(atualizarDataHora, 1000);
             
-            // Carregar dados
             await carregarListas();
             await carregarChamados();
             
-            // Configurar formulário
             document.getElementById('formChamado').addEventListener('submit', salvarChamado);
             
             console.log('✅ Página inicializada!');
         }
 
-        // Atualizar data/hora
         function atualizarDataHora() {
             document.getElementById('dataHora').value = new Date().toLocaleString('pt-BR');
         }
@@ -324,30 +388,31 @@
         // ============================================
         async function carregarListas() {
             try {
-                console.log('📋 Carregando listas...');
                 const snapshot = await database.ref('LISTAS').once('value');
                 const listas = snapshot.val();
                 
                 if (listas) {
-                    // Preencher equipamentos
                     const selectEquip = document.getElementById('equipamento');
+                    const editEquip = document.getElementById('editEquipamento');
                     if (selectEquip && listas.equipamentos) {
                         selectEquip.innerHTML = '<option value="">Selecione o equipamento...</option>';
+                        editEquip.innerHTML = '<option value="">Selecione...</option>';
                         listas.equipamentos.forEach(eq => {
                             selectEquip.innerHTML += `<option value="${eq}">${eq}</option>`;
+                            editEquip.innerHTML += `<option value="${eq}">${eq}</option>`;
                         });
                     }
                     
-                    // Preencher cenários
                     const selectCen = document.getElementById('cenario');
+                    const editCen = document.getElementById('editCenario');
                     if (selectCen && listas.cenarios) {
                         selectCen.innerHTML = '<option value="">Selecione o cenário...</option>';
+                        editCen.innerHTML = '<option value="">Selecione...</option>';
                         listas.cenarios.forEach(cen => {
                             selectCen.innerHTML += `<option value="${cen}">${cen}</option>`;
+                            editCen.innerHTML += `<option value="${cen}">${cen}</option>`;
                         });
                     }
-                    
-                    console.log('✅ Listas carregadas!');
                 }
             } catch (error) {
                 console.error('❌ Erro ao carregar listas:', error);
@@ -355,7 +420,7 @@
         }
 
         // ============================================
-        // SALVAR CHAMADO
+        // SALVAR CHAMADO (SALVA O NOME DO ANALISTA)
         // ============================================
         async function salvarChamado(event) {
             event.preventDefault();
@@ -379,6 +444,7 @@
                 flag: document.getElementById('flag').checked,
                 analista: USUARIO_ATUAL.nome,
                 analistaEmail: USUARIO_ATUAL.email,
+                criadoPor: USUARIO_ATUAL.uid,
                 createdAt: Date.now(),
                 deleted: false,
                 isDuplicate: false
@@ -389,20 +455,20 @@
             try {
                 await database.ref('CHAMADOS').push(dados);
                 
-                // Atualizar contador de linhas
-                await database.ref(`CONTADOR_LINHAS/${linha}`).set({
-                    count: firebase.database.ServerValue.increment(1) || 1,
+                const refLinha = database.ref(`CONTADOR_LINHAS/${linha}`);
+                const snapLinha = await refLinha.once('value');
+                const dadosLinha = snapLinha.val() || { count: 0 };
+                await refLinha.set({
+                    count: (dadosLinha.count || 0) + 1,
                     lastAt: Date.now()
                 });
                 
-                console.log('✅ Chamado salvo!');
                 alert('✅ Chamado criado com sucesso!');
-                
                 limparFormulario();
                 await carregarChamados();
             } catch (error) {
                 console.error('❌ Erro ao salvar:', error);
-                alert('❌ Erro ao salvar chamado: ' + error.message);
+                alert('❌ Erro ao salvar: ' + error.message);
             }
         }
 
@@ -411,7 +477,6 @@
         // ============================================
         async function carregarChamados(filtros = {}) {
             try {
-                console.log('🔍 Carregando chamados...');
                 const snapshot = await database.ref('CHAMADOS').once('value');
                 const todosChamados = [];
                 
@@ -422,10 +487,8 @@
                     }
                 });
                 
-                // Ordenar por data (mais recentes primeiro)
                 todosChamados.sort((a, b) => b.createdAt - a.createdAt);
                 
-                // Aplicar filtros
                 let chamadosFiltrados = todosChamados;
                 
                 if (filtros.chamado) {
@@ -444,19 +507,14 @@
                     );
                 }
                 if (filtros.dataInicial) {
-                    chamadosFiltrados = chamadosFiltrados.filter(c => 
-                        c.createdAt >= filtros.dataInicial
-                    );
+                    chamadosFiltrados = chamadosFiltrados.filter(c => c.createdAt >= filtros.dataInicial);
                 }
                 if (filtros.dataFinal) {
-                    chamadosFiltrados = chamadosFiltrados.filter(c => 
-                        c.createdAt <= filtros.dataFinal
-                    );
+                    chamadosFiltrados = chamadosFiltrados.filter(c => c.createdAt <= filtros.dataFinal);
                 }
                 
                 console.log(`📊 ${chamadosFiltrados.length} chamados encontrados`);
                 
-                // Atualizar tabela
                 const tbody = document.getElementById('corpoTabela');
                 document.getElementById('totalRegistros').textContent = chamadosFiltrados.length;
                 
@@ -504,7 +562,7 @@
         }
 
         // ============================================
-        // EDITAR CHAMADO (Analista só edita)
+        // EDITAR CHAMADO
         // ============================================
         window.editarChamado = async function(id) {
             try {
@@ -512,104 +570,16 @@
                 const chamado = snapshot.val();
                 
                 if (chamado) {
-                    // Preencher modal de edição
-                    const modalHTML = `
-                        <div class="modal fade" id="modalEdicao" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">
-                                            <i class="bi bi-pencil-square"></i> Editar Chamado
-                                        </h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="formEdicao">
-                                            <input type="hidden" id="editId" value="${id}">
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Chamado *</label>
-                                                    <input type="text" class="form-control" id="editChamado" 
-                                                           value="${chamado.chamado || ''}" required>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Linha *</label>
-                                                    <input type="text" class="form-control" id="editLinha" 
-                                                           value="${chamado.linha || ''}" required>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Equipamento</label>
-                                                    <select class="form-select" id="editEquipamento">
-                                                        <option value="">Selecione...</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Cenário</label>
-                                                    <select class="form-select" id="editCenario">
-                                                        <option value="">Selecione...</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Email</label>
-                                                    <input type="email" class="form-control" id="editEmail" 
-                                                           value="${chamado.email || ''}">
-                                                </div>
-                                                <div class="col-12">
-                                                    <label class="form-label">Título</label>
-                                                    <input type="text" class="form-control" id="editTitulo" 
-                                                           value="${chamado.titulo || ''}">
-                                                </div>
-                                                <div class="col-12">
-                                                    <label class="form-label">Observações</label>
-                                                    <textarea class="form-control" id="editObservacoes" rows="3">${chamado.observacoes || ''}</textarea>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                            Cancelar
-                                        </button>
-                                        <button type="button" class="btn btn-primary" onclick="salvarEdicao()">
-                                            <i class="bi bi-check-circle"></i> Salvar Alterações
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    document.getElementById('editId').value = id;
+                    document.getElementById('editChamado').value = chamado.chamado || '';
+                    document.getElementById('editLinha').value = chamado.linha || '';
+                    document.getElementById('editEquipamento').value = chamado.equipamento || '';
+                    document.getElementById('editCenario').value = chamado.cenario || '';
+                    document.getElementById('editEmail').value = chamado.email || '';
+                    document.getElementById('editTitulo').value = chamado.titulo || '';
+                    document.getElementById('editObservacoes').value = chamado.observacoes || '';
                     
-                    // Remover modal anterior se existir
-                    const oldModal = document.getElementById('modalEdicao');
-                    if (oldModal) oldModal.remove();
-                    
-                    // Adicionar novo modal
-                    document.body.insertAdjacentHTML('beforeend', modalHTML);
-                    
-                    // Preencher dropdowns
-                    const snapshot2 = await database.ref('LISTAS').once('value');
-                    const listas = snapshot2.val();
-                    
-                    if (listas) {
-                        const editEquip = document.getElementById('editEquipamento');
-                        if (editEquip && listas.equipamentos) {
-                            editEquip.innerHTML = '<option value="">Selecione...</option>';
-                            listas.equipamentos.forEach(eq => {
-                                editEquip.innerHTML += `<option value="${eq}" ${chamado.equipamento === eq ? 'selected' : ''}>${eq}</option>`;
-                            });
-                        }
-                        
-                        const editCen = document.getElementById('editCenario');
-                        if (editCen && listas.cenarios) {
-                            editCen.innerHTML = '<option value="">Selecione...</option>';
-                            listas.cenarios.forEach(cen => {
-                                editCen.innerHTML += `<option value="${cen}" ${chamado.cenario === cen ? 'selected' : ''}>${cen}</option>`;
-                            });
-                        }
-                    }
-                    
-                    const modal = new bootstrap.Modal(document.getElementById('modalEdicao'));
-                    modal.show();
+                    new bootstrap.Modal(document.getElementById('modalEdicao')).show();
                 }
             } catch (error) {
                 console.error('❌ Erro ao editar:', error);
@@ -617,7 +587,6 @@
             }
         };
 
-        // Salvar edição
         window.salvarEdicao = async function() {
             const id = document.getElementById('editId').value;
             const dados = {
@@ -639,15 +608,11 @@
             
             try {
                 await database.ref(`CHAMADOS/${id}`).update(dados);
-                console.log('✅ Chamado atualizado:', id);
                 alert('✅ Chamado atualizado com sucesso!');
-                
                 bootstrap.Modal.getInstance(document.getElementById('modalEdicao')).hide();
-                document.getElementById('modalEdicao').remove();
                 await carregarChamados();
             } catch (error) {
-                console.error('❌ Erro ao atualizar:', error);
-                alert('❌ Erro ao atualizar: ' + error.message);
+                alert('❌ Erro: ' + error.message);
             }
         };
 
@@ -694,17 +659,11 @@
             atualizarDataHora();
         };
 
-        window.carregarMais = function() {
-            alert('Funcionalidade em desenvolvimento');
-        };
-
         window.logout = function() {
-            if (confirm('Deseja sair do sistema?')) {
-                window.location.href = 'login.html';
-            }
+            localStorage.removeItem('sps_user');
+            window.location.href = 'login.html';
         };
 
-        // Iniciar
         window.addEventListener('DOMContentLoaded', inicializar);
     </script>
 </body>
