@@ -1,5 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+// ============================================
+// VERIFICAÇÃO IMEDIATA DE ACESSO
+// ============================================
+(function() {
+    const dados = JSON.parse(localStorage.getItem('sps_user') || '{}');
+    
+    if (!dados.uid) {
+        alert('⚠️ Faça login para acessar o sistema.');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    if (!dados.admin) {
+        alert('⛔ ACESSO RESTRITO!\n\nEsta página é exclusiva para supervisores.\n\nVocê será redirecionado para o Dashboard.');
+        window.location.href = 'index.html';
+        return;
+    }
+})();
+    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
