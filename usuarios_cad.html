@@ -134,13 +134,12 @@
                                 <th>Admin</th>
                                 <th>Status</th>
                                 <th>Cadastro</th>
-                                <th>Último Acesso</th>
                                 <th style="width: 180px;">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="corpoTabela">
                             <tr>
-                                <td colspan="8" class="text-center py-5">
+                                <td colspan="7" class="text-center py-5">
                                     <i class="bi bi-hourglass-split fs-1 d-block mb-3"></i>
                                     <p class="fs-5">Carregando usuários...</p>
                                 </td>
@@ -163,7 +162,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formNovoUsuario">
+                    <form id="formNovoUsuario" onsubmit="return false;">
                         <!-- NOME -->
                         <div class="mb-3">
                             <label class="form-label">
@@ -180,7 +179,6 @@
                             </label>
                             <input type="email" class="form-control" id="novoEmail" 
                                    placeholder="usuario@exemplo.com" required>
-                            <small class="text-muted">Este email será usado para login</small>
                         </div>
                         
                         <!-- SENHA -->
@@ -247,10 +245,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formEditarUsuario">
+                    <form id="formEditarUsuario" onsubmit="return false;">
                         <input type="hidden" id="editUid">
                         
-                        <!-- NOME -->
                         <div class="mb-3">
                             <label class="form-label">
                                 <i class="bi bi-person"></i> Nome Completo
@@ -259,7 +256,6 @@
                                    placeholder="Nome do usuário">
                         </div>
                         
-                        <!-- EMAIL (readonly) -->
                         <div class="mb-3">
                             <label class="form-label">
                                 <i class="bi bi-envelope"></i> Email
@@ -268,7 +264,6 @@
                             <small class="text-muted">O email não pode ser alterado</small>
                         </div>
                         
-                        <!-- PERFIL -->
                         <div class="mb-3">
                             <label class="form-label">
                                 <i class="bi bi-person-badge"></i> Perfil
@@ -279,7 +274,6 @@
                             </select>
                         </div>
                         
-                        <!-- ADMIN -->
                         <div class="mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="editAdmin">
@@ -289,7 +283,6 @@
                             </div>
                         </div>
                         
-                        <!-- ATIVO -->
                         <div class="mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="editAtivo">
@@ -306,33 +299,6 @@
                     </button>
                     <button type="button" class="btn btn-primary" onclick="salvarEdicaoUsuario()">
                         <i class="bi bi-check-circle"></i> Salvar Alterações
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Confirmar Exclusão -->
-    <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">
-                        <i class="bi bi-exclamation-triangle"></i> Confirmar Exclusão
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Tem certeza que deseja excluir este usuário?</p>
-                    <p class="text-danger"><strong>Esta ação não pode ser desfeita!</strong></p>
-                    <input type="hidden" id="excluirUid">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button type="button" class="btn btn-danger" onclick="confirmarExclusao()">
-                        <i class="bi bi-trash"></i> Excluir
                     </button>
                 </div>
             </div>
@@ -364,23 +330,16 @@
         const database = firebase.database();
 
         // ============================================
-        // CARREGAR USUÁRIO LOGADO
+        // DADOS DO USUÁRIO LOGADO
         // ============================================
-        function carregarUsuarioLogado() {
-            const dados = JSON.parse(localStorage.getItem('sps_user') || '{}');
-            if (!dados.uid) {
-                return {
-                    uid: 'dev',
-                    nome: 'Supervisor',
-                    email: 'admin@sps.com',
-                    role: 'SUPERVISOR',
-                    admin: true
-                };
-            }
-            return dados;
-        }
-
-        const USUARIO_ATUAL = carregarUsuarioLogado();
+        let USUARIO_ATUAL = {
+            uid: 'dev',
+            nome: 'Supervisor',
+            email: 'admin@sps.com',
+            role: 'SUPERVISOR',
+            admin: true
+        };
+        
         let filtroAtual = 'todos';
         let todosUsuarios = [];
 
@@ -388,4 +347,353 @@
         // INICIALIZAÇÃO
         // ============================================
         async function inicializar() {
-            console
+            console.log('🚀 Inicializando Gestão de Usuários...');
+            
+            // Carregar dados do localStorage
+            const dadosLocal = JSON.parse(localStorage.getItem('sps_user') || '{}');
+            if (dadosLocal.uid) {
+                USUARIO_ATUAL = dadosLocal;
+            }
+            
+            document.getElementById('userInfo').innerHTML = 
+                `<i class="bi bi-person-badge"></i> ${USUARIO_ATUAL.nome} (SUPERVISOR)`;
+            
+            // Verificar autenticação Firebase
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    console.log('✅ Autenticado como:', user.email);
+                    await carregarUsuarios();
+                } else {
+                    console.warn('⚠️ Não autenticado, carregando mesmo assim...');
+                    await carregarUsuarios();
+                }
+            });
+            
+            console.log('✅ Página inicializada!');
+        }
+
+        // ============================================
+        // CARREGAR USUÁRIOS DO DATABASE
+        // ============================================
+        async function carregarUsuarios() {
+            try {
+                console.log('🔍 Buscando usuários no Database...');
+                const snapshot = await database.ref('USERS').once('value');
+                const usuarios = [];
+                
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const data = child.val();
+                        usuarios.push({
+                            uid: child.key,
+                            username: data.nome || data.username || 'Sem nome',
+                            nome: data.nome || data.username || 'Sem nome',
+                            email: data.email || '',
+                            role: data.role || 'ANALISTA',
+                            admin: data.admin || false,
+                            ativo: data.ativo !== false,
+                            createdAt: data.createdAt || '-',
+                            lastLogin: data.lastLogin || '-'
+                        });
+                    });
+                }
+                
+                todosUsuarios = usuarios;
+                console.log(`✅ ${usuarios.length} usuários carregados:`, usuarios);
+                
+                // Atualizar cards
+                document.getElementById('totalUsuarios').textContent = usuarios.length;
+                document.getElementById('totalAtivos').textContent = usuarios.filter(u => u.ativo).length;
+                document.getElementById('totalInativos').textContent = usuarios.filter(u => !u.ativo).length;
+                document.getElementById('totalAdmins').textContent = usuarios.filter(u => u.admin).length;
+                
+                // Exibir na tabela
+                filtrarUsuarios(filtroAtual);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar usuários:', error);
+                document.getElementById('corpoTabela').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-danger">
+                            <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+                            <p>Erro ao carregar usuários</p>
+                            <small>${error.message}</small>
+                        </td>
+                    </tr>`;
+            }
+        }
+
+        // ============================================
+        // FILTRAR USUÁRIOS
+        // ============================================
+        window.filtrarUsuarios = function(filtro) {
+            filtroAtual = filtro;
+            
+            // Atualizar botões
+            ['btnTodos', 'btnAtivos', 'btnInativos'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.remove('active');
+            });
+            
+            const btnMap = { 'todos': 'btnTodos', 'ativos': 'btnAtivos', 'inativos': 'btnInativos' };
+            const btnAtivo = document.getElementById(btnMap[filtro]);
+            if (btnAtivo) btnAtivo.classList.add('active');
+            
+            // Filtrar
+            let filtrados = todosUsuarios;
+            if (filtro === 'ativos') filtrados = todosUsuarios.filter(u => u.ativo);
+            if (filtro === 'inativos') filtrados = todosUsuarios.filter(u => !u.ativo);
+            
+            exibirUsuarios(filtrados);
+        };
+
+        // ============================================
+        // EXIBIR USUÁRIOS NA TABELA
+        // ============================================
+        function exibirUsuarios(usuarios) {
+            const tbody = document.getElementById('corpoTabela');
+            
+            if (usuarios.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="bi bi-people fs-1 d-block mb-3"></i>
+                            <p class="fs-5">Nenhum usuário encontrado</p>
+                            <small class="text-muted">Clique em "Novo Usuário" para cadastrar</small>
+                        </td>
+                    </tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = usuarios.map(u => {
+                const statusClass = u.ativo ? 'success' : 'secondary';
+                const statusText = u.ativo ? 'Ativo' : 'Inativo';
+                const statusIcon = u.ativo ? 'bi-check-circle-fill' : 'bi-x-circle-fill';
+                
+                return `
+                    <tr class="${!u.ativo ? 'opacity-50' : ''}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person-circle fs-4 me-2 ${u.ativo ? 'text-success' : 'text-muted'}"></i>
+                                <div>
+                                    <strong>${u.nome || u.username}</strong>
+                                    ${u.admin ? '<span class="badge bg-danger ms-2">Admin</span>' : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td><small>${u.email}</small></td>
+                        <td><span class="badge bg-${u.role === 'SUPERVISOR' ? 'warning' : 'info'}">${u.role}</span></td>
+                        <td>${u.admin ? '<span class="badge bg-danger">Sim</span>' : '<span class="badge bg-secondary">Não</span>'}</td>
+                        <td>
+                            <span class="badge bg-${statusClass}">
+                                <i class="bi ${statusIcon}"></i> ${statusText}
+                            </span>
+                        </td>
+                        <td><small>${u.createdAt}</small></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-warning" onclick="abrirModalEdicao('${u.uid}')" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                ${u.uid !== USUARIO_ATUAL.uid ? `
+                                    <button class="btn btn-danger" onclick="excluirUsuario('${u.uid}')" title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // ABRIR MODAL NOVO USUÁRIO
+        // ============================================
+        window.abrirModalNovoUsuario = function() {
+            document.getElementById('formNovoUsuario').reset();
+            document.getElementById('novoAtivo').checked = true;
+            new bootstrap.Modal(document.getElementById('modalNovoUsuario')).show();
+        };
+
+        // ============================================
+        // CRIAR USUÁRIO (SEM DESLOGAR O ADMIN)
+        // ============================================
+        window.criarUsuario = async function() {
+            const nome = document.getElementById('novoNome').value.trim();
+            const email = document.getElementById('novoEmail').value.trim();
+            const senha = document.getElementById('novaSenha').value;
+            const perfil = document.getElementById('novoPerfil').value;
+            const admin = document.getElementById('novoAdmin').checked;
+            const ativo = document.getElementById('novoAtivo').checked;
+            
+            if (!nome || !email || !senha) {
+                alert('❌ Preencha todos os campos: Nome, Email e Senha!');
+                return;
+            }
+            
+            if (senha.length < 6) {
+                alert('❌ A senha deve ter no mínimo 6 caracteres!');
+                return;
+            }
+            
+            try {
+                console.log('👤 Criando usuário:', nome, email);
+                
+                // Guardar o usuário atual logado
+                const adminAtual = auth.currentUser;
+                const adminEmail = adminAtual ? adminAtual.email : USUARIO_ATUAL.email;
+                
+                console.log('📌 Admin atual:', adminEmail);
+                
+                // Criar o novo usuário no Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, senha);
+                const novoUser = userCredential.user;
+                
+                console.log('✅ Usuário criado no Auth:', novoUser.uid);
+                
+                // Salvar dados no Database
+                await database.ref(`USERS/${novoUser.uid}`).set({
+                    username: nome,
+                    nome: nome,
+                    email: email,
+                    admin: admin,
+                    role: perfil,
+                    ativo: ativo,
+                    createdAt: new Date().toLocaleDateString('pt-BR'),
+                    criadoPor: USUARIO_ATUAL.nome
+                });
+                
+                console.log('✅ Perfil salvo no Database');
+                
+                // VOLTAR PARA O ADMIN (desloga o novo usuário e reloga o admin)
+                await auth.signOut();
+                
+                // Relogar como admin automaticamente
+                if (adminAtual && adminEmail) {
+                    // Pedir senha do admin
+                    const senhaAdmin = prompt(
+                        '✅ Usuário criado com sucesso!\n\n' +
+                        `Nome: ${nome}\n` +
+                        `Email: ${email}\n\n` +
+                        'Para continuar, digite SUA senha de administrador:'
+                    );
+                    
+                    if (senhaAdmin) {
+                        try {
+                            await auth.signInWithEmailAndPassword(adminEmail, senhaAdmin);
+                            console.log('✅ Admin reautenticado');
+                            alert('✅ Tudo pronto! O novo usuário foi cadastrado.');
+                        } catch (err) {
+                            console.error('❌ Falha ao reautenticar admin:', err);
+                            alert('⚠️ Não foi possível reautenticar. Faça login novamente.');
+                            localStorage.removeItem('sps_user');
+                            window.location.href = 'login.html';
+                            return;
+                        }
+                    } else {
+                        alert('⚠️ Você será redirecionado para o login.');
+                        localStorage.removeItem('sps_user');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                }
+                
+                // Fechar modal e recarregar lista
+                bootstrap.Modal.getInstance(document.getElementById('modalNovoUsuario')).hide();
+                await carregarUsuarios();
+                
+            } catch (error) {
+                console.error('❌ Erro ao criar usuário:', error);
+                
+                let mensagem = 'Erro ao criar usuário';
+                if (error.code === 'auth/email-already-in-use') {
+                    mensagem = 'Este email já está cadastrado no sistema';
+                } else if (error.code === 'auth/invalid-email') {
+                    mensagem = 'Email inválido';
+                } else if (error.code === 'auth/weak-password') {
+                    mensagem = 'Senha muito fraca (mínimo 6 caracteres)';
+                }
+                
+                alert('❌ ' + mensagem);
+            }
+        };
+
+        // ============================================
+        // EDITAR USUÁRIO
+        // ============================================
+        window.abrirModalEdicao = function(uid) {
+            const usuario = todosUsuarios.find(u => u.uid === uid);
+            if (!usuario) {
+                alert('Usuário não encontrado!');
+                return;
+            }
+            
+            document.getElementById('editUid').value = uid;
+            document.getElementById('editUsername').value = usuario.nome || usuario.username;
+            document.getElementById('editEmail').value = usuario.email;
+            document.getElementById('editPerfil').value = usuario.role;
+            document.getElementById('editAdmin').checked = usuario.admin;
+            document.getElementById('editAtivo').checked = usuario.ativo;
+            
+            new bootstrap.Modal(document.getElementById('modalEditarUsuario')).show();
+        };
+
+        window.salvarEdicaoUsuario = async function() {
+            const uid = document.getElementById('editUid').value;
+            const dados = {
+                nome: document.getElementById('editUsername').value.trim(),
+                username: document.getElementById('editUsername').value.trim(),
+                role: document.getElementById('editPerfil').value,
+                admin: document.getElementById('editAdmin').checked,
+                ativo: document.getElementById('editAtivo').checked,
+                atualizadoPor: USUARIO_ATUAL.nome,
+                updatedAt: new Date().toLocaleDateString('pt-BR')
+            };
+            
+            try {
+                await database.ref(`USERS/${uid}`).update(dados);
+                console.log('✅ Usuário atualizado:', uid);
+                alert('✅ Usuário atualizado com sucesso!');
+                
+                bootstrap.Modal.getInstance(document.getElementById('modalEditarUsuario')).hide();
+                await carregarUsuarios();
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                alert('❌ Erro: ' + error.message);
+            }
+        };
+
+        // ============================================
+        // EXCLUIR USUÁRIO
+        // ============================================
+        window.excluirUsuario = async function(uid) {
+            if (uid === USUARIO_ATUAL.uid) {
+                alert('⛔ Você não pode excluir seu próprio usuário!');
+                return;
+            }
+            
+            if (confirm('Tem certeza que deseja excluir este usuário?\n\nEsta ação não pode ser desfeita!')) {
+                try {
+                    await database.ref(`USERS/${uid}`).remove();
+                    console.log('✅ Usuário excluído do Database:', uid);
+                    alert('✅ Usuário excluído com sucesso!');
+                    await carregarUsuarios();
+                } catch (error) {
+                    console.error('❌ Erro:', error);
+                    alert('❌ Erro ao excluir: ' + error.message);
+                }
+            }
+        };
+
+        window.logout = function() {
+            auth.signOut();
+            localStorage.removeItem('sps_user');
+            window.location.href = 'login.html';
+        };
+
+        // Iniciar
+        window.addEventListener('DOMContentLoaded', inicializar);
+    </script>
+</body>
+</html>
