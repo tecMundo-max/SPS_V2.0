@@ -69,6 +69,11 @@
             border-color: var(--claro-vermelho);
             box-shadow: 0 0 0 0.2rem rgba(218, 41, 28, 0.25);
             outline: none;
+            background-color: #3a3a3a;
+        }
+        
+        .form-control-login::placeholder {
+            color: #888;
         }
         
         .btn-login {
@@ -114,6 +119,11 @@
             border: 1px solid var(--border-color);
             color: var(--text-muted);
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -124,7 +134,7 @@
             <p>Sistema de Prestação de Serviços</p>
         </div>
         
-        <!-- Formulário de Login -->
+        <!-- FORMULÁRIO DE LOGIN -->
         <form id="loginForm">
             <div class="mb-3">
                 <label class="form-label">
@@ -135,7 +145,7 @@
                         <i class="bi bi-at"></i>
                     </span>
                     <input type="email" class="form-control-login" id="email" 
-                           placeholder="seu@email.com" required>
+                           placeholder="seu@email.com" required autocomplete="email">
                 </div>
             </div>
             
@@ -148,7 +158,7 @@
                         <i class="bi bi-key"></i>
                     </span>
                     <input type="password" class="form-control-login" id="senha" 
-                           placeholder="••••••••" required>
+                           placeholder="••••••••" required autocomplete="current-password">
                     <button class="btn input-group-text" type="button" onclick="toggleSenha()">
                         <i class="bi bi-eye" id="iconeOlho"></i>
                     </button>
@@ -164,22 +174,30 @@
             <span>ou</span>
         </div>
         
-        <!-- Formulário de Registro -->
+        <!-- FORMULÁRIO DE REGISTRO -->
         <form id="registroForm" style="display: none;">
             <div class="mb-3">
                 <label class="form-label">
-                    <i class="bi bi-envelope"></i> Email
+                    <i class="bi bi-person"></i> Nome Completo <span class="text-danger">*</span>
                 </label>
-                <input type="email" class="form-control-login" id="regEmail" 
-                       placeholder="seu@email.com" required>
+                <input type="text" class="form-control-login" id="regNome" 
+                       placeholder="Seu nome completo" required>
             </div>
             
             <div class="mb-3">
                 <label class="form-label">
-                    <i class="bi bi-lock"></i> Senha
+                    <i class="bi bi-envelope"></i> Email <span class="text-danger">*</span>
+                </label>
+                <input type="email" class="form-control-login" id="regEmail" 
+                       placeholder="seu@email.com" required autocomplete="email">
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-lock"></i> Senha <span class="text-danger">*</span>
                 </label>
                 <input type="password" class="form-control-login" id="regSenha" 
-                       placeholder="Mínimo 6 caracteres" required minlength="6">
+                       placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
             </div>
             
             <div class="mb-3">
@@ -187,7 +205,7 @@
                     <i class="bi bi-lock-fill"></i> Confirmar Senha
                 </label>
                 <input type="password" class="form-control-login" id="regConfirmarSenha" 
-                       placeholder="Repita a senha" required minlength="6">
+                       placeholder="Repita a senha" required minlength="6" autocomplete="new-password">
             </div>
             
             <button type="submit" class="btn-login mb-3">
@@ -214,7 +232,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Configuração Firebase
+        // ============================================
+        // CONFIGURAÇÃO FIREBASE
+        // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyDYnvcRKt4qDpk08_4MQVNEOr9Iq95X980",
             authDomain: "sps003hjr.firebaseapp.com",
@@ -231,7 +251,9 @@
 
         let modoRegistro = false;
 
-        // Alternar entre Login e Registro
+        // ============================================
+        // ALTERNAR ENTRE LOGIN E REGISTRO
+        // ============================================
         window.toggleRegistro = function() {
             modoRegistro = !modoRegistro;
             
@@ -246,9 +268,14 @@
                 document.getElementById('textoAlternar').innerHTML = 
                     '<i class="bi bi-person-plus"></i> Não tem conta? Cadastre-se';
             }
+            
+            // Limpar mensagem
+            document.getElementById('mensagemStatus').style.display = 'none';
         };
 
-        // Toggle senha
+        // ============================================
+        // TOGGLE SENHA
+        // ============================================
         window.toggleSenha = function() {
             const senhaInput = document.getElementById('senha');
             const icone = document.getElementById('iconeOlho');
@@ -262,46 +289,70 @@
             }
         };
 
-        // Mostrar mensagem
+        // ============================================
+        // MOSTRAR MENSAGEM
+        // ============================================
         function mostrarMensagem(texto, tipo) {
             const div = document.getElementById('mensagemStatus');
             div.style.display = 'block';
             div.className = `alert alert-${tipo} mt-3`;
-            div.textContent = texto;
+            div.innerHTML = texto;
         }
 
+        // ============================================
         // LOGIN
+        // ============================================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const email = document.getElementById('email').value.trim();
             const senha = document.getElementById('senha').value;
             
+            if (!email || !senha) {
+                mostrarMensagem('❌ Preencha todos os campos!', 'danger');
+                return;
+            }
+            
             try {
-                mostrarMensagem('⏳ Autenticando...', 'info');
+                mostrarMensagem('<i class="bi bi-hourglass-split"></i> Autenticando...', 'info');
                 
                 const userCredential = await auth.signInWithEmailAndPassword(email, senha);
                 const user = userCredential.user;
                 
                 console.log('✅ Login realizado:', user.email);
                 
-                // Buscar perfil do usuário
+                // Buscar perfil do usuário no Database
                 const snapshot = await database.ref(`USERS/${user.uid}`).once('value');
                 const perfil = snapshot.val();
                 
-                // Salvar dados da sessão
+                // Verificar se está ativo
+                if (perfil && perfil.ativo === false) {
+                    await auth.signOut();
+                    mostrarMensagem('⛔ Sua conta ainda não foi ativada. Aguarde o supervisor.', 'warning');
+                    return;
+                }
+                
+                // Salvar dados da sessão com NOME e EMAIL
                 const dadosSessao = {
                     uid: user.uid,
                     email: user.email,
-                    nome: perfil?.username || user.email.split('@')[0],
+                    nome: perfil?.nome || perfil?.username || email.split('@')[0],
+                    username: perfil?.username || email.split('@')[0],
                     role: perfil?.role || 'ANALISTA',
                     admin: perfil?.admin || false,
-                    ativo: perfil?.ativo || false
+                    ativo: perfil?.ativo !== false
                 };
                 
                 localStorage.setItem('sps_user', JSON.stringify(dadosSessao));
                 
-                // Redirecionar baseado no perfil
+                // Atualizar último login
+                await database.ref(`USERS/${user.uid}`).update({
+                    lastLogin: new Date().toLocaleString('pt-BR')
+                });
+                
+                console.log('📦 Dados da sessão:', dadosSessao);
+                
+                // Redirecionar
                 if (dadosSessao.admin) {
                     window.location.href = 'index.html';
                 } else {
@@ -318,55 +369,79 @@
                     mensagem = 'Senha incorreta';
                 } else if (error.code === 'auth/invalid-email') {
                     mensagem = 'Email inválido';
+                } else if (error.code === 'auth/too-many-requests') {
+                    mensagem = 'Muitas tentativas. Aguarde um momento.';
                 }
                 
                 mostrarMensagem('❌ ' + mensagem, 'danger');
             }
         });
 
-        // REGISTRO
+        // ============================================
+        // REGISTRO (Auto-cadastro)
+        // ============================================
         document.getElementById('registroForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const nome = document.getElementById('regNome').value.trim();
             const email = document.getElementById('regEmail').value.trim();
             const senha = document.getElementById('regSenha').value;
             const confirmarSenha = document.getElementById('regConfirmarSenha').value;
             
+            // Validações
+            if (!nome || !email || !senha) {
+                mostrarMensagem('❌ Preencha todos os campos obrigatórios!', 'danger');
+                return;
+            }
+            
             if (senha !== confirmarSenha) {
-                mostrarMensagem('❌ As senhas não coincidem', 'danger');
+                mostrarMensagem('❌ As senhas não coincidem!', 'danger');
                 return;
             }
             
             if (senha.length < 6) {
-                mostrarMensagem('❌ A senha deve ter no mínimo 6 caracteres', 'danger');
+                mostrarMensagem('❌ A senha deve ter no mínimo 6 caracteres!', 'danger');
                 return;
             }
             
             try {
-                mostrarMensagem('⏳ Criando conta...', 'info');
+                mostrarMensagem('<i class="bi bi-hourglass-split"></i> Criando conta...', 'info');
                 
+                // Criar no Firebase Authentication
                 const userCredential = await auth.createUserWithEmailAndPassword(email, senha);
                 const user = userCredential.user;
                 
-                // Criar perfil no banco
-                await database.ref(`USERS/${user.uid}`).set({
-                    username: email,
+                // Criar perfil no Database com NOME e EMAIL
+                const perfilUsuario = {
+                    username: nome,
+                    nome: nome,
                     email: email,
                     admin: false,
                     role: 'ANALISTA',
                     ativo: false,
-                    createdAt: new Date().toLocaleDateString('pt-BR')
-                });
+                    createdAt: new Date().toLocaleDateString('pt-BR'),
+                    createdBy: 'auto-cadastro'
+                };
                 
-                console.log('✅ Conta criada:', user.email);
-                mostrarMensagem('✅ Conta criada com sucesso! Aguarde ativação pelo supervisor.', 'success');
+                await database.ref(`USERS/${user.uid}`).set(perfilUsuario);
+                
+                console.log('✅ Conta criada:', nome, email);
+                console.log('📦 Perfil:', perfilUsuario);
+                
+                mostrarMensagem(
+                    '✅ Conta criada com sucesso!<br><br>' +
+                    '<strong>Nome:</strong> ' + nome + '<br>' +
+                    '<strong>Email:</strong> ' + email + '<br><br>' +
+                    '<small class="text-warning">⚠️ Aguarde a ativação pelo supervisor para acessar o sistema.</small>',
+                    'success'
+                );
                 
                 // Voltar para login após 2 segundos
                 setTimeout(() => {
                     toggleRegistro();
                     document.getElementById('email').value = email;
-                    mostrarMensagem('', '');
-                }, 2000);
+                    document.getElementById('mensagemStatus').style.display = 'none';
+                }, 3000);
                 
             } catch (error) {
                 console.error('❌ Erro no registro:', error);
@@ -377,23 +452,26 @@
                 } else if (error.code === 'auth/invalid-email') {
                     mensagem = 'Email inválido';
                 } else if (error.code === 'auth/weak-password') {
-                    mensagem = 'Senha muito fraca';
+                    mensagem = 'Senha muito fraca (mínimo 6 caracteres)';
                 }
                 
                 mostrarMensagem('❌ ' + mensagem, 'danger');
             }
         });
 
-        // Verificar se já está logado
+        // ============================================
+        // VERIFICAR SE JÁ ESTÁ LOGADO
+        // ============================================
         auth.onAuthStateChanged((user) => {
             if (user) {
-                console.log('👤 Usuário já logado:', user.email);
-                // Se já estiver logado, redirecionar
                 const dadosSessao = JSON.parse(localStorage.getItem('sps_user') || '{}');
-                if (dadosSessao.admin) {
-                    window.location.href = 'index.html';
-                } else {
-                    window.location.href = 'chamados.html';
+                if (dadosSessao.uid === user.uid) {
+                    console.log('👤 Usuário já logado:', user.email);
+                    if (dadosSessao.admin) {
+                        window.location.href = 'index.html';
+                    } else {
+                        window.location.href = 'chamados.html';
+                    }
                 }
             }
         });
