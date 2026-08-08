@@ -1,19 +1,399 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPS v2</title>
-
-    <link rel="icon" href="assets/logo/favicon.ico">
-
-    <script type="module" src="js/bootstrap.js"></script>
-
+    <title>SPS V2 - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-speedometer2"></i> <strong>SPS V2</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="chamados.html">
+                            <i class="bi bi-telephone"></i> Chamados
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="chamados_adm.html">
+                            <i class="bi bi-telephone-fill"></i> Chamados Admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="encaminhamentos.html">
+                            <i class="bi bi-envelope"></i> Encaminhamentos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="usuarios_cad.html">
+                            <i class="bi bi-people"></i> Usuários
+                        </a>
+                    </li>
+                </ul>
+                <span class="navbar-text me-3" id="userInfo">
+                    <i class="bi bi-person-circle"></i> Carregando...
+                </span>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> Sair
+                </button>
+            </div>
+        </div>
+    </nav>
 
+    <!-- Conteúdo Principal -->
+    <div class="container-fluid mt-3">
+        
+        <!-- Cards de Estatísticas -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-telephone-fill"></i>
+                    <div class="stats-number" id="totalChamados">-</div>
+                    <div class="stats-label">Total de Chamados</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-calendar-check"></i>
+                    <div class="stats-number" id="chamadosHoje">-</div>
+                    <div class="stats-label">Chamados Hoje</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-envelope-fill"></i>
+                    <div class="stats-number" id="totalEncaminhamentos">-</div>
+                    <div class="stats-label">Encaminhamentos</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <i class="bi bi-people-fill"></i>
+                    <div class="stats-number" id="totalAnalistas">-</div>
+                    <div class="stats-label">Analistas Ativos</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Cenários -->
+            <div class="col-md-6">
+                <div class="section-container">
+                    <div class="section-header">
+                        <h5><i class="bi bi-pie-chart"></i> Chamados por Cenário</h5>
+                    </div>
+                    <div class="section-body">
+                        <div id="cenariosList">
+                            <p class="text-center text-muted py-3">Carregando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipamentos -->
+            <div class="col-md-6">
+                <div class="section-container">
+                    <div class="section-header">
+                        <h5><i class="bi bi-bar-chart"></i> Chamados por Equipamento</h5>
+                    </div>
+                    <div class="section-body">
+                        <div id="equipamentosList">
+                            <p class="text-center text-muted py-3">Carregando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+            <!-- Últimos Chamados -->
+            <div class="col-md-8">
+                <div class="section-container">
+                    <div class="section-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-clock-history"></i> Últimos Chamados</h5>
+                        <a href="chamados_adm.html" class="btn btn-sm btn-outline-light">
+                            Ver Todos <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="section-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Analista</th>
+                                        <th>Chamado</th>
+                                        <th>Linha</th>
+                                        <th>Cenário</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ultimosChamados">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-3">Carregando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Analistas -->
+            <div class="col-md-4">
+                <div class="section-container">
+                    <div class="section-header">
+                        <h5><i class="bi bi-trophy"></i> Top Analistas</h5>
+                    </div>
+                    <div class="section-body">
+                        <div id="topAnalistas">
+                            <p class="text-center text-muted py-3">Carregando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÃO FIREBASE
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYnvcRKt4qDpk08_4MQVNEOr9Iq95X980",
+            authDomain: "sps003hjr.firebaseapp.com",
+            databaseURL: "https://sps003hjr-default-rtdb.firebaseio.com",
+            projectId: "sps003hjr",
+            storageBucket: "sps003hjr.firebasestorage.app",
+            messagingSenderId: "294133615625",
+            appId: "1:294133615625:web:832c4db972dcb1b92cbcd8"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Usuário modo dev
+        const USUARIO = {
+            nome: 'Supervisor',
+            role: 'SUPERVISOR'
+        };
+
+        // ============================================
+        // INICIALIZAR
+        // ============================================
+        async function inicializar() {
+            console.log('🚀 Inicializando Dashboard...');
+            
+            // UI
+            document.getElementById('userInfo').innerHTML = 
+                `<i class="bi bi-person-circle"></i> ${USUARIO.nome} (${USUARIO.role})`;
+            
+            // Carregar dados
+            await carregarDados();
+            
+            console.log('✅ Dashboard carregado!');
+        }
+
+        // ============================================
+        // CARREGAR DADOS
+        // ============================================
+        async function carregarDados() {
+            try {
+                // Buscar chamados
+                const snapChamados = await database.ref('CHAMADOS').once('value');
+                const chamados = [];
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+                
+                snapChamados.forEach(child => {
+                    const data = child.val();
+                    if (!data.deleted) {
+                        chamados.push(data);
+                    }
+                });
+                
+                console.log('📊 Chamados carregados:', chamados.length);
+                
+                // Cards
+                document.getElementById('totalChamados').textContent = chamados.length;
+                
+                const chamadosHoje = chamados.filter(c => c.createdAt >= hoje.getTime());
+                document.getElementById('chamadosHoje').textContent = chamadosHoje.length;
+                
+                // Analistas únicos
+                const analistas = [...new Set(chamados.map(c => c.analista).filter(Boolean))];
+                document.getElementById('totalAnalistas').textContent = analistas.length;
+                
+                // Encaminhamentos
+                const snapEnc = await database.ref('ENCAMINHAMENTOS').once('value');
+                let totalEnc = 0;
+                snapEnc.forEach(child => {
+                    if (!child.val().deleted) totalEnc++;
+                });
+                document.getElementById('totalEncaminhamentos').textContent = totalEnc;
+                
+                // Cenários (gráfico)
+                carregarCenarios(chamados);
+                
+                // Equipamentos (gráfico)
+                carregarEquipamentos(chamados);
+                
+                // Últimos chamados
+                carregarUltimosChamados(chamados);
+                
+                // Top analistas
+                carregarTopAnalistas(chamados);
+                
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                mostrarErro(error.message);
+            }
+        }
+
+        // Cenários
+        function carregarCenarios(chamados) {
+            const cenarios = {};
+            chamados.forEach(c => {
+                if (c.cenario) {
+                    cenarios[c.cenario] = (cenarios[c.cenario] || 0) + 1;
+                }
+            });
+            
+            const sorted = Object.entries(cenarios).sort((a, b) => b[1] - a[1]);
+            const total = chamados.length || 1;
+            
+            const html = sorted.slice(0, 8).map(([cen, count]) => {
+                const percent = ((count / total) * 100).toFixed(1);
+                return `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-light">${cen}</span>
+                            <span class="badge bg-primary">${count}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar" style="width: ${percent}%">${percent}%</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('cenariosList').innerHTML = html || 
+                '<p class="text-center text-muted">Nenhum dado</p>';
+        }
+
+        // Equipamentos
+        function carregarEquipamentos(chamados) {
+            const equipamentos = {};
+            chamados.forEach(c => {
+                if (c.equipamento) {
+                    equipamentos[c.equipamento] = (equipamentos[c.equipamento] || 0) + 1;
+                }
+            });
+            
+            const sorted = Object.entries(equipamentos).sort((a, b) => b[1] - a[1]);
+            const total = chamados.length || 1;
+            
+            const html = sorted.slice(0, 8).map(([eq, count]) => {
+                const percent = ((count / total) * 100).toFixed(1);
+                return `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-light">${eq}</span>
+                            <span class="badge bg-info">${count}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-info" style="width: ${percent}%">${percent}%</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('equipamentosList').innerHTML = html || 
+                '<p class="text-center text-muted">Nenhum dado</p>';
+        }
+
+        // Últimos chamados
+        function carregarUltimosChamados(chamados) {
+            const sorted = chamados.sort((a, b) => b.createdAt - a.createdAt).slice(0, 10);
+            const tbody = document.getElementById('ultimosChamados');
+            
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">Nenhum chamado</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = sorted.map(c => `
+                <tr>
+                    <td><small>${new Date(c.createdAt).toLocaleString('pt-BR')}</small></td>
+                    <td><span class="badge bg-secondary">${c.analista || '-'}</span></td>
+                    <td><strong>${c.chamado || '-'}</strong></td>
+                    <td>${c.linha || '-'}</td>
+                    <td>${c.cenario || '-'}</td>
+                    <td><span class="badge bg-success">Ativo</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Top analistas
+        function carregarTopAnalistas(chamados) {
+            const analistas = {};
+            chamados.forEach(c => {
+                if (c.analista) {
+                    analistas[c.analista] = (analistas[c.analista] || 0) + 1;
+                }
+            });
+            
+            const sorted = Object.entries(analistas).sort((a, b) => b[1] - a[1]);
+            
+            const medals = ['🥇', '🥈', '🥉'];
+            const html = sorted.slice(0, 5).map(([nome, count], index) => `
+                <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded" 
+                     style="background: var(--bg-input);">
+                    <div>
+                        <span style="font-size: 1.5rem;" class="me-3">${medals[index] || '⭐'}</span>
+                        <span class="text-light fw-bold">${nome}</span>
+                    </div>
+                    <span class="badge bg-primary fs-6">${count} chamados</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('topAnalistas').innerHTML = html || 
+                '<p class="text-center text-muted">Nenhum dado</p>';
+        }
+
+        function mostrarErro(msg) {
+            document.getElementById('cenariosList').innerHTML = 
+                `<p class="text-danger">Erro: ${msg}</p>`;
+        }
+
+        window.logout = function() {
+            localStorage.removeItem('sps_user');
+            window.location.href = 'login.html';
+        };
+
+        // Iniciar
+        window.addEventListener('DOMContentLoaded', inicializar);
+    </script>
 </body>
-
 </html>
