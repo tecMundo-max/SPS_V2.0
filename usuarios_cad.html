@@ -346,32 +346,42 @@
         // ============================================
         // INICIALIZAÇÃO
         // ============================================
-        async function inicializar() {
-            console.log('🚀 Inicializando Gestão de Usuários...');
-            
-            // Carregar dados do localStorage
-            const dadosLocal = JSON.parse(localStorage.getItem('sps_user') || '{}');
-            if (dadosLocal.uid) {
-                USUARIO_ATUAL = dadosLocal;
-            }
-            
-            document.getElementById('userInfo').innerHTML = 
-                `<i class="bi bi-person-badge"></i> ${USUARIO_ATUAL.nome} (SUPERVISOR)`;
-            
-            // Verificar autenticação Firebase
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    console.log('✅ Autenticado como:', user.email);
-                    await carregarUsuarios();
-                } else {
-                    console.warn('⚠️ Não autenticado, carregando mesmo assim...');
-                    await carregarUsuarios();
-                }
-            });
-            
-            console.log('✅ Página inicializada!');
+     // ============================================
+// INICIALIZAÇÃO
+// ============================================
+async function inicializar() {
+    console.log('🚀 Inicializando Gestão de Usuários...');
+    
+    // Carregar dados do localStorage
+    const dadosLocal = JSON.parse(localStorage.getItem('sps_user') || '{}');
+    
+    // ⛔ VERIFICAÇÃO DE ACESSO - APENAS ADMIN
+    if (!dadosLocal.admin) {
+        alert('⛔ ACESSO RESTRITO!\n\nApenas supervisores/administradores podem acessar esta página.');
+        window.location.href = 'index.html';
+        return;
+    }
+    
+    if (dadosLocal.uid) {
+        USUARIO_ATUAL = dadosLocal;
+    }
+    
+    document.getElementById('userInfo').innerHTML = 
+        `<i class="bi bi-person-badge"></i> ${USUARIO_ATUAL.nome} (SUPERVISOR)`;
+    
+    // Verificar autenticação Firebase
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            console.log('✅ Autenticado como:', user.email);
+            await carregarUsuarios();
+        } else {
+            console.warn('⚠️ Não autenticado, carregando mesmo assim...');
+            await carregarUsuarios();
         }
-
+    });
+    
+    console.log('✅ Página inicializada!');
+}
         // ============================================
         // CARREGAR USUÁRIOS DO DATABASE
         // ============================================
