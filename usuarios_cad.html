@@ -332,16 +332,25 @@
         // ============================================
         // DADOS DO USUÁRIO LOGADO
         // ============================================
-        let USUARIO_ATUAL = {
-            uid: 'dev',
-            nome: 'Supervisor',
-            email: 'admin@sps.com',
-            role: 'SUPERVISOR',
-            admin: true
-        };
-        
-        let filtroAtual = 'todos';
-        let todosUsuarios = [];
+      // ============================================
+// DADOS DO USUÁRIO LOGADO
+// ============================================
+let USUARIO_ATUAL = {
+    uid: 'dev',
+    nome: 'Supervisor',
+    email: 'admin@sps.com',
+    role: 'SUPERVISOR',
+    admin: true
+};
+
+// Verificar imediatamente se é admin
+(function() {
+    const dados = JSON.parse(localStorage.getItem('sps_user') || '{}');
+    if (!dados.admin && dados.uid) {
+        alert('⛔ ACESSO RESTRITO!\n\nApenas supervisores podem acessar esta página.');
+        window.location.href = 'index.html';
+    }
+})();
 
         // ============================================
         // INICIALIZAÇÃO
